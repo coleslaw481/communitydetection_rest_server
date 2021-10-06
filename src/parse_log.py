@@ -83,7 +83,7 @@ def log_file_generator(logdir=None, logprefix=None, logsuffix=None):
     return None
 
 
-def add_stats_from_logfile(logfile=None, data_dict=None, out_stream=None,
+def add_stats_from_logfile(logfile=None, data_dict=None,
                            err_stream=None):
     """
     Reads thru 'logfile' passed in and builds a dict of jobs where id is
@@ -287,10 +287,8 @@ def parse_logs(theargs, out_stream=sys.stdout,
     for logfile in logfiles:
         add_stats_from_logfile(logfile=logfile,
                                data_dict=data_dict,
-                               out_stream=out_stream,
                                err_stream=err_stream)
 
-    total_jobs = len(data_dict)
     start_date = end_date - timedelta(days=theargs.window)
     filtered_dict = filter_by_date(data_dict, start_date=start_date, end_date=end_date)
     filtered_total_jobs = len(filtered_dict)
