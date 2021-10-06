@@ -32,6 +32,7 @@ public class Configuration {
     public static final String DOCKER_CMD = "communitydetection.docker.cmd";
     public static final String ALGORITHM_MAP = "communitydetection.algorithm.map";
     public static final String ALGORITHM_TIMEOUT = "communitydetection.algorithm.timeout";
+    public static final String MOUNT_OPTIONS = "communitydetection.mount.options";
     
     
     private static Configuration INSTANCE;
@@ -44,6 +45,7 @@ public class Configuration {
     private static int _numWorkers;
     private static CommunityDetectionAlgorithms _algorithms;
     private static long _timeOut;
+    private String _mountOptions;
     
     /**
      * Constructor that attempts to get configuration from properties file
@@ -73,6 +75,7 @@ public class Configuration {
         _dockerCmd = props.getProperty(Configuration.DOCKER_CMD, "docker");
         _algorithms = getAlgorithms(props.getProperty(Configuration.ALGORITHM_MAP, null));
         _timeOut = Long.parseLong(props.getProperty(Configuration.ALGORITHM_TIMEOUT, "180"));
+        _mountOptions = props.getProperty(Configuration.MOUNT_OPTIONS, ":ro");
         if (_hostURL.trim().isEmpty()){
             _hostURL = "";
         } else if (!_hostURL.endsWith("/")){
@@ -139,6 +142,10 @@ public class Configuration {
     
     public CommunityDetectionAlgorithms getAlgorithms(){
         return _algorithms;
+    }
+    
+    public String getMountOptions(){
+        return _mountOptions;
     }
     
     /**
