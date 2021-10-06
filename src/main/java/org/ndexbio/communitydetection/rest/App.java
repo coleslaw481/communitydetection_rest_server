@@ -405,6 +405,9 @@ public class App {
         sb.append("# Path to file containing json of algorithms\n");
         sb.append(Configuration.ALGORITHM_MAP + " = " + CD_ALGORITHMS_FILE + "\n\n");
         
+        sb.append("# Mount options, if unset :ro is used (podman may require :ro,z\n");
+        sb.append(Configuration.MOUNT_OPTIONS + " = :ro\n\n");
+        
         sb.append("# Sets HOST URL prefix (value is prefixed to Location header when query is invoked. Can be commented out)\n");
         sb.append("# " + Configuration.HOST_URL + " = http://ndexbio.org\n");
         
@@ -416,12 +419,6 @@ public class App {
         
         sb.append("# Sets Jetty Context Path for Community Detection (the endpoint assumes /cd so if apache doesnt redirect from there then add /cd here\n");
         sb.append(App.RUNSERVER_CONTEXTPATH + " = /cd\n\n");
-        
-        //sb.append("# Sets DoS Filter maxRequestsPerSec See: https://www.eclipse.org/jetty/documentation/current/dos-filter.html\n");
-        //sb.append(App.RUNSERVER_DOSFILTER_MAX_REQS + " = 1\n\n");
-        
-        //sb.append("# Sets DoS Filter delayMs See: https://www.eclipse.org/jetty/documentation/current/dos-filter.html\n");
-        //sb.append(App.RUNSERVER_DOSFILTER_DELAY + " = 200\n\n");
         
         sb.append("# Valid log levels DEBUG INFO WARN ERROR ALL\n");
         sb.append(App.RUNSERVER_LOGLEVEL + " = INFO\n");
