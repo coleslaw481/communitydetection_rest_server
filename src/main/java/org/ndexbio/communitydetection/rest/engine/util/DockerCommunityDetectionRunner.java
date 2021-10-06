@@ -44,6 +44,7 @@ public class DockerCommunityDetectionRunner implements Callable {
     private long _startTime;
     private long _timeOut;
     private TimeUnit _timeUnit;
+    private String _mountOptions;
  
     private CommandLineRunner _runner;
     
@@ -64,7 +65,8 @@ public class DockerCommunityDetectionRunner implements Callable {
             final String dockerCmd, final String dockerImage,
             final Map<String, String> customParameters,
             final long timeOut,
-            final TimeUnit unit) throws Exception{
+            final TimeUnit unit,
+            final String mountOptions) throws Exception{
         _id = id;
         _cdr = cdr;
         _dockerCmd = dockerCmd;
@@ -75,6 +77,13 @@ public class DockerCommunityDetectionRunner implements Callable {
         _workDir = _taskDir + File.separator + _id;
         _timeOut = timeOut;
         _timeUnit = unit;
+        if (mountOptions != null){
+            _mountOptions = mountOptions;
+        }
+        else {
+            _mountOptions = "";
+        }
+
         writeInputFile();
        
         _runner = new CommandLineRunnerImpl();
@@ -262,7 +271,7 @@ public class DockerCommunityDetectionRunner implements Callable {
         
         File workDir = new File(_workDir);
         
-        String mapDir = _workDir + ":" + _workDir + ":ro";
+        String mapDir = _workDir + ":" + _workDir + _mountOptions;
         _runner.setWorkingDirectory(_workDir);
         
         String inputFile = writeInputFile();
