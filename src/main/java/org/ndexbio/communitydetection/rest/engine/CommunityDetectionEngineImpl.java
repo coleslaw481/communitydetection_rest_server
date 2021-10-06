@@ -270,7 +270,8 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
             DockerCommunityDetectionRunner task = new DockerCommunityDetectionRunner(id, request, cdr.getStartTime(),
             _taskDir, _dockerCmd, dockerImage, request.getCustomParameters(),
                     Configuration.getInstance().getAlgorithmTimeOut(),
-            TimeUnit.SECONDS);
+            TimeUnit.SECONDS,
+            Configuration.getInstance().getMountOptions());
             _futureTaskMap.put(id, _executorService.submit(task));
             return id;
         } catch(Exception ex){
