@@ -28,6 +28,7 @@ import org.jboss.resteasy.plugins.server.servlet.FilterDispatcher;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithm;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
 import org.ndexbio.communitydetection.rest.model.CustomParameter;
+import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,8 +197,7 @@ public class App {
                 openApiInitMap.put("javax.ws.rs.Application",
                         "org.ndexbio.communitydetection.rest.OpenApiApplication");
                 openApiInitMap.put("openApi.configuration.resourceClasses",
-                        "org.ndexbio.communitydetection.rest.services.CommunityDetection,"
-                                + "org.ndexbio.communitydetection.rest.services.Status");
+                        getClassesToParseByOpenApi());
                 openApiInitMap.put("openApi.configuration.resourcePackages",
                         "org.ndexbio.communitydetection.rest.model");
                 openApiServlet.setInitOrder(2);
@@ -228,6 +228,20 @@ public class App {
             ex.printStackTrace();
         }
 
+    }
+    
+    public static String getClassesToParseByOpenApi(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("org.ndexbio.communitydetection.rest.services.CommunityDetection,");
+        sb.append("org.ndexbio.communitydetection.rest.services.Status");
+        try {
+            if (Configuration.getInstance().getDiffusionAlgorithm() != null){
+                sb.append(",org.ndexbio.communitydetection.rest.services.Diffusion");
+            }
+        } catch(CommunityDetectionException cde){
+            _logger.error("Unable to check if diffusion algorithm is in config", cde);
+        }
+        return sb.toString();
     }
     
     public static String getApplicationPath(Properties props){
