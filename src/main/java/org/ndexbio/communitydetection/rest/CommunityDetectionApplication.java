@@ -1,7 +1,5 @@
 package org.ndexbio.communitydetection.rest; 
 
-import io.swagger.v3.jaxrs2.integration.resources.AcceptHeaderOpenApiResource;
-import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 
 import javax.ws.rs.core.Application;
 import java.util.HashSet;
@@ -30,8 +28,6 @@ public class CommunityDetectionApplication extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         return Stream.of(CommunityDetection.class,
-                Status.class,
-                OpenApiResource.class,
-                AcceptHeaderOpenApiResource.class).collect(Collectors.toSet());
+                Status.class).collect(Collectors.toSet());
     }
 }
