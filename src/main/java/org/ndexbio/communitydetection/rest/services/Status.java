@@ -21,10 +21,6 @@ import org.ndexbio.communitydetection.rest.engine.CommunityDetectionEngine;
  * Returns status of Server
  * @author churas
  */
-@Server(
-        description = "default",
-        url = "/cd" + Configuration.APPLICATION_PATH
-        )
 @Path("/")
 public class Status {
     
