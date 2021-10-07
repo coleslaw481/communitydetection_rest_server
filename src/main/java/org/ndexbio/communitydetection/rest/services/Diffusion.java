@@ -36,10 +36,6 @@ import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionEx
  * Diffusion service
  * @author churas
  */
-@Server(
-        description = "default",
-        url = "/cd" + Configuration.APPLICATION_PATH
-        )
 @Path("/")
 public class Diffusion {
     

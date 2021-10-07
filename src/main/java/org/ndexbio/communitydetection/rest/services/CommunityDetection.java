@@ -46,17 +46,18 @@ import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionEx
  */
 @OpenAPIDefinition( info = 
     @Info(title = "Community Detection REST service",
-          version = "0.8.1-SNAPSHOT",
+          version = "Unknown",
           description = "This service lets caller invoke various community detection clustering "
                   + "algorithms which have been packaged into Docker images. To see what "
                   + "algorithms are supported visit the 'algorithms' endpoint below.\n\n "
                   + "<b>NOTE:</b> This service is experimental. The interface is subject to change.\n" +
-"")
-)
-@Server(
+""), servers = @Server(
         description = "default",
-        url = "/cd" + Configuration.APPLICATION_PATH
+        url = "/cd/communitydetection"
         )
+    
+)
+
 @Path("/")
 public class CommunityDetection {
     
@@ -70,7 +71,7 @@ public class CommunityDetection {
     @Path(Configuration.V_ONE_PATH + "/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Submits Community Detection task",
+    @Operation(summary = "Submits task",
                description="Payload in JSON format needs to have data along with name of algorithm to run "
                        + "and any algorithm specific parameters. Information about what algorithms are available"
                        + "and what are the custom parameters can obtained by visiting the 'algorithms'"
@@ -129,7 +130,7 @@ public class CommunityDetection {
     @GET 
     @Path(Configuration.V_ONE_PATH + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Gets result of Community Detection task",
+    @Operation(summary = "Gets result of task",
                description="NOTE: For incomplete/failed jobs only Status, message, progress, and walltime will\n" +
 "be returned in JSON",
                responses = {
@@ -203,7 +204,7 @@ public class CommunityDetection {
     @GET 
     @Path(Configuration.V_ONE_PATH + "/{id}/status")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Gets status of Community Detection task",
+    @Operation(summary = "Gets status of task",
                description="This lets caller get status without getting the full result back",
                responses = {
                    @ApiResponse(responseCode = "200",

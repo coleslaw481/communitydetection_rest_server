@@ -83,7 +83,7 @@ def log_file_generator(logdir=None, logprefix=None, logsuffix=None):
     return None
 
 
-def add_stats_from_logfile(logfile=None, data_dict=None, out_stream=None,
+def add_stats_from_logfile(logfile=None, data_dict=None,
                            err_stream=None):
     """
     Reads thru 'logfile' passed in and builds a dict of jobs where id is
@@ -123,7 +123,6 @@ def add_stats_from_logfile(logfile=None, data_dict=None, out_stream=None,
                         request_param = request_raw[cparam_index + CUSTOM_PARAM_LEN:]
                 except ValueError:
                     request_param = None
-                # out_stream.write(request_id + ' => ' + request_algo + ' => ' + str(request_param) + '\n')
                 if request_id in data_dict:
                     err_stream.write('duplicate request id found!!!! ' + request_id + '\n')
                     continue
@@ -135,7 +134,6 @@ def add_stats_from_logfile(logfile=None, data_dict=None, out_stream=None,
                                 'rawdate': request_date,
                                 'datefromrawdate': datetime.strptime(request_date,
                                                                      '%Y_%m_%d %H:%M:%S.%f')}
-
                 data_dict[request_id] = request_dict
             if RESULT_ID in line:
                 result_raw = line[line.index(RESULT_ID)+RESULT_ID_LEN:]
@@ -147,7 +145,6 @@ def add_stats_from_logfile(logfile=None, data_dict=None, out_stream=None,
                 result_message = ' '.join(split_res[10:]).rstrip()
                 if result_id not in data_dict:
                     err_stream.write('No request matching id:' + result_id + ': found' + '\n')
-                    err_stream.write('\t' + str(data_dict[result_id]) + '\n')
                     continue
                 request_dict = data_dict[result_id]
                 request_dict['start_time'] = result_start
@@ -285,13 +282,13 @@ def parse_logs(theargs, out_stream=sys.stdout,
     :return:
     """
     data_dict = {}
-    for logfile in log_file_generator(os.path.abspath(theargs.logdir)):
+    logfiles = [x for x in log_file_generator(os.path.abspath(theargs.logdir))]
+    logfiles.sort()
+    for logfile in logfiles:
         add_stats_from_logfile(logfile=logfile,
                                data_dict=data_dict,
-                               out_stream=out_stream,
                                err_stream=err_stream)
 
-    total_jobs = len(data_dict)
     start_date = end_date - timedelta(days=theargs.window)
     filtered_dict = filter_by_date(data_dict, start_date=start_date, end_date=end_date)
     filtered_total_jobs = len(filtered_dict)
