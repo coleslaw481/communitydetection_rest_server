@@ -17,11 +17,7 @@ import java.util.List;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import org.eclipse.jetty.server.ConnectionFactory;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.ForwardedRequestCustomizer;
 import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.util.RolloverFileOutputStream;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -39,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import org.ndexbio.communitydetection.rest.services.Configuration;
 import org.ndexbio.communitydetection.rest.services.CommunityDetectionHttpServletDispatcher;
+import org.ndexbio.communitydetection.rest.services.OpenApiHttpServletDispatcher;
 
 
 /**
@@ -75,7 +72,6 @@ public class App {
     /**
      * Sets context path for embedded Jetty
      */
-    public static final String RUNSERVER_CONTEXTPATH = "runserver.contextpath";
     
     public static final String RUNSERVER_DOSFILTER_MAX_REQS = "runserver.dosfilter.maxrequestspersec";
     
@@ -146,12 +142,17 @@ public class App {
                 rootLog.setLevel(Level.toLevel(props.getProperty(App.RUNSERVER_LOGLEVEL, "INFO")));
 
                 String logDir = props.getProperty(App.RUNSERVER_LOGDIR, ".");
-                RolloverFileOutputStream os = new RolloverFileOutputStream(logDir + File.separator + "communitydetection_yyyy_mm_dd.log", true);
+                RolloverFileOutputStream os = new RolloverFileOutputStream(logDir 
+                        + File.separator + "communitydetection_yyyy_mm_dd.log", true);
 		
 		
                 final int port = Integer.valueOf(props.getProperty(App.RUNSERVER_PORT, "8081"));
-                System.out.println("\nSpinning up server. For status visit: \nhttp://localhost:" + Integer.toString(port) + "/cd" + Configuration.APPLICATION_PATH + Configuration.V_ONE_PATH + "/status\n");
-                System.out.println("Swagger documentation: " + "http://localhost:" + Integer.toString(port) + "/cd\n");
+                String applicationPath = App.getApplicationPath(props);
+                System.out.println("\nSpinning up server. For status visit: \nhttp://localhost:" 
+                        + Integer.toString(port) + props.getProperty(Configuration.RUNSERVER_CONTEXTPATH) 
+                        + applicationPath + Configuration.V_ONE_PATH + "/status\n");
+                System.out.println("Swagger documentation: " + "http://localhost:" 
+                        + Integer.toString(port) + props.getProperty(Configuration.RUNSERVER_CONTEXTPATH) + "\n");
                 System.out.flush();
                 
                 //We are creating a print stream based on our RolloverFileOutputStream
@@ -163,30 +164,46 @@ public class App {
 
                 final Server server = new Server(port);
 
-                final ServletContextHandler webappContext = new ServletContextHandler(server, props.getProperty(App.RUNSERVER_CONTEXTPATH, "/"));
+                final ServletContextHandler webappContext = new ServletContextHandler(server,
+                        Configuration.getInstance().getRunServerContextPath());
+                
                 
                 HashMap<String, String> initMap = new HashMap<>();
                 initMap.put("resteasy.servlet.mapping.prefix",
-                            Configuration.APPLICATION_PATH + "/");
-                initMap.put("javax.ws.rs.Application", "org.ndexbio.communitydetection.rest.CommunityDetectionApplication");
-                //initMap.put("openApi.configuration.prettyPrint", "true");
-                initMap.put("openApi.configuration.resourceClasses", "org.ndexbio.communitydetection.rest.services.CommunityDetection,org.ndexbio.communitydetection.rest.services.Status");
-                initMap.put("openApi.configuration.resourcePackages", "org.ndexbio.communitydetection.rest.model");
+                             applicationPath + "/");
+                
+                initMap.put("javax.ws.rs.Application",
+                        "org.ndexbio.communitydetection.rest.CommunityDetectionApplication");
                 final ServletHolder restEasyServlet = new ServletHolder(
                      new CommunityDetectionHttpServletDispatcher());
                 
                 restEasyServlet.setInitOrder(1);
                 restEasyServlet.setInitParameters(initMap);
                 webappContext.addServlet(restEasyServlet,
-                                          Configuration.APPLICATION_PATH + "/*");
+                                          applicationPath + "/*");
                 webappContext.addFilter(CorsFilter.class,
-                                        Configuration.APPLICATION_PATH + "/*", null);
+                                        applicationPath + "/*", null);
                 webappContext.addFilter(FilterDispatcher.class, "/*", null);
-                //FilterHolder dosFilterHolder = new FilterHolder(DoSFilter.class);
-                //dosFilterHolder.setInitParameter("maxRequestsPerSec", props.getProperty(App.RUNSERVER_DOSFILTER_MAX_REQS, "2"));
-                //dosFilterHolder.setInitParameter("delayMs", props.getProperty(App.RUNSERVER_DOSFILTER_DELAY, "200"));
-                //webappContext.addFilter(dosFilterHolder, "/*",null);
                 
+                
+                final ServletHolder openApiServlet = new ServletHolder(new OpenApiHttpServletDispatcher());
+                HashMap<String, String> openApiInitMap = new HashMap<>();
+                initMap.put("resteasy.servlet.mapping.prefix",
+                             "/openapi/");
+                openApiInitMap.put("openApi.configuration.filterClass",
+                        "org.ndexbio.communitydetection.rest.SwaggerFilter");
+                openApiInitMap.put("openApi.configuration.prettyPrint", "true");
+                openApiInitMap.put("javax.ws.rs.Application",
+                        "org.ndexbio.communitydetection.rest.OpenApiApplication");
+                openApiInitMap.put("openApi.configuration.resourceClasses",
+                        "org.ndexbio.communitydetection.rest.services.CommunityDetection,"
+                                + "org.ndexbio.communitydetection.rest.services.Status");
+                openApiInitMap.put("openApi.configuration.resourcePackages",
+                        "org.ndexbio.communitydetection.rest.model");
+                openApiServlet.setInitOrder(2);
+                openApiServlet.setInitParameters(openApiInitMap);
+                webappContext.addServlet(openApiServlet, "/openapi.json");
+
                 String resourceBasePath = App.class.getResource("/webapp").toExternalForm();
                 webappContext.setWelcomeFiles(new String[] { "index.html" });
                 webappContext.setResourceBase(resourceBasePath);
@@ -196,10 +213,7 @@ public class App {
                 contexts.setHandlers(new Handler[] { webappContext });
  
                 server.setHandler(contexts);
-                
-                //addCustomizerToEnableDoSFilterToSeeIpAddresses(server);
-                
-                
+                   
                 server.start();	    
                 System.out.println("Server started on: " + server.getURI().toString());
                 server.join();
@@ -216,24 +230,9 @@ public class App {
 
     }
     
-    /**
-     * This function finds the HttpConfiguration factory and adds in the
-     * ForwardedRequestCustomizer object which handles issue where putting
-     * this server behind a proxy one loses the requestor's ip address 
-     * cause the proxy sets the actual ip in X-Forwarded... header
-     * @param server 
-     */
-    public static void addCustomizerToEnableDoSFilterToSeeIpAddresses(Server server) {
-	ForwardedRequestCustomizer customizer = new ForwardedRequestCustomizer();
-	for (Connector connector : server.getConnectors()) {
-		for (ConnectionFactory connectionFactory : connector.getConnectionFactories()) {
-			if (connectionFactory instanceof HttpConfiguration.ConnectionFactory) {
-				((HttpConfiguration.ConnectionFactory) connectionFactory)
-						.getHttpConfiguration().addCustomizer(customizer);
-			}
-		}
-	}
-}
+    public static String getApplicationPath(Properties props){
+        return props.getProperty(Configuration.RUNSERVER_APP_PATH, "/communitydetection");
+    }
     
     public static Properties getPropertiesFromConf(final String path) throws IOException, FileNotFoundException {
         Properties props = new Properties();
@@ -417,8 +416,8 @@ public class App {
         sb.append("# Sets port Jetty web service will be run under\n");
         sb.append(App.RUNSERVER_PORT + " = 8081\n\n");
         
-        sb.append("# Sets Jetty Context Path for Community Detection (the endpoint assumes /cd so if apache doesnt redirect from there then add /cd here\n");
-        sb.append(App.RUNSERVER_CONTEXTPATH + " = /cd\n\n");
+        sb.append("# Sets Jetty Context Path for Community Detection\n");
+        sb.append(Configuration.RUNSERVER_CONTEXTPATH + " = /cd\n\n");
         
         sb.append("# Valid log levels DEBUG INFO WARN ERROR ALL\n");
         sb.append(App.RUNSERVER_LOGLEVEL + " = INFO\n");
