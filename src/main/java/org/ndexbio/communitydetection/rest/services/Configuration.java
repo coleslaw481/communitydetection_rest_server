@@ -22,7 +22,7 @@ import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
  */
 public class Configuration {
     
-    public static final String APPLICATION_PATH = "/communitydetection";
+    //public static final String APPLICATION_PATH = "/communitydetection";
     public static final String V_ONE_PATH = "/v1";
     public static final String COMMUNITY_DETECTION_CONFIG = "COMMUNITY_DETECTION_CONFIG";
     
@@ -33,7 +33,11 @@ public class Configuration {
     public static final String ALGORITHM_MAP = "communitydetection.algorithm.map";
     public static final String ALGORITHM_TIMEOUT = "communitydetection.algorithm.timeout";
     public static final String MOUNT_OPTIONS = "communitydetection.mount.options";
+    public static final String SWAGGER_TITLE = "swagger.title";
+    public static final String SWAGGER_DESC = "swagger.description";
     
+    public static final String RUNSERVER_CONTEXTPATH = "runserver.contextpath";
+    public static final String RUNSERVER_APP_PATH = "runserver.applicationpath";
     
     private static Configuration INSTANCE;
     private static final Logger _logger = LoggerFactory.getLogger(Configuration.class);
@@ -46,6 +50,10 @@ public class Configuration {
     private static CommunityDetectionAlgorithms _algorithms;
     private static long _timeOut;
     private String _mountOptions;
+    private String _swaggerTitle;
+    private String _swaggerDescription;
+    private String _contextPath;
+    private String _applicationPath;
     
     /**
      * Constructor that attempts to get configuration from properties file
@@ -76,6 +84,10 @@ public class Configuration {
         _algorithms = getAlgorithms(props.getProperty(Configuration.ALGORITHM_MAP, null));
         _timeOut = Long.parseLong(props.getProperty(Configuration.ALGORITHM_TIMEOUT, "180"));
         _mountOptions = props.getProperty(Configuration.MOUNT_OPTIONS, ":ro");
+        _swaggerTitle = props.getProperty(Configuration.SWAGGER_TITLE, null);
+        _swaggerDescription = props.getProperty(Configuration.SWAGGER_DESC, null);
+        _contextPath = props.getProperty(Configuration.RUNSERVER_CONTEXTPATH, "/cd");
+        _applicationPath = props.getProperty(Configuration.RUNSERVER_APP_PATH, "/communitydetection");
         if (_hostURL.trim().isEmpty()){
             _hostURL = "";
         } else if (!_hostURL.endsWith("/")){
@@ -146,6 +158,27 @@ public class Configuration {
     
     public String getMountOptions(){
         return _mountOptions;
+    }
+    
+    public String getSwaggerTitle(){
+        return _swaggerTitle;
+    }
+    
+    public String getSwaggerDescription(){
+        return _swaggerDescription;
+    }
+    
+    public String getRunServerContextPath(){
+        return _contextPath;
+    }
+    
+    public String getRunServerApplicationPath(){
+        return _applicationPath;
+    }
+    
+    
+    public String getSwaggerServer(){
+        return getRunServerContextPath() + getRunServerApplicationPath();
     }
     
     /**
