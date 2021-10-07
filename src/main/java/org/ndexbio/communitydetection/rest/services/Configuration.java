@@ -157,24 +157,6 @@ public class Configuration {
     public String getHostURL(){
         return _hostURL;
     }
-    
-	/**
-	 * Gets the diffusion algorithm if found in configuration
-	 * @return 
-	 */
-	public CommunityDetectionAlgorithm getDiffusionAlgorithm(){
-		return _diffusionAlgo;
-	}
-	
-	/**
-	 * Gets the polling delay for diffusion which denotes how 
-	 * long service should wait before checking if diffusion task
-	 * is complete
-	 * @return time in milliseconds
-	 */
-	public long getDiffusionPollingDelay(){
-		return _diffusionPollingDelay;
-	}
 	
     /**
      * Gets directory where enrichment task results should be stored
