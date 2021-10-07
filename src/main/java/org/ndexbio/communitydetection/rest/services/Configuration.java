@@ -11,6 +11,7 @@ import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionEx
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.ndexbio.communitydetection.rest.engine.CommunityDetectionEngine;
+import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithm;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
 
 /**
@@ -24,6 +25,7 @@ public class Configuration {
     
     //public static final String APPLICATION_PATH = "/communitydetection";
     public static final String V_ONE_PATH = "/v1";
+    public static final String LEGACY_DIFFUSION_PATH = "/diffusion";
     public static final String COMMUNITY_DETECTION_CONFIG = "COMMUNITY_DETECTION_CONFIG";
     
     public static final String TASK_DIR = "communitydetection.task.dir";
@@ -33,6 +35,7 @@ public class Configuration {
     public static final String ALGORITHM_MAP = "communitydetection.algorithm.map";
     public static final String ALGORITHM_TIMEOUT = "communitydetection.algorithm.timeout";
     public static final String MOUNT_OPTIONS = "communitydetection.mount.options";
+    public static final String DIFFUSION_POLLDELAY = "communitydetection.diffusion.polldelay";
     public static final String SWAGGER_TITLE = "swagger.title";
     public static final String SWAGGER_DESC = "swagger.description";
     
@@ -48,6 +51,8 @@ public class Configuration {
     private static String _dockerCmd;
     private static int _numWorkers;
     private static CommunityDetectionAlgorithms _algorithms;
+    private static CommunityDetectionAlgorithm _diffusionAlgo;
+    private static long _diffusionPollingDelay;
     private static long _timeOut;
     private String _mountOptions;
     private String _swaggerTitle;
@@ -82,6 +87,21 @@ public class Configuration {
         _hostURL = props.getProperty(Configuration.HOST_URL, "");
         _dockerCmd = props.getProperty(Configuration.DOCKER_CMD, "docker");
         _algorithms = getAlgorithms(props.getProperty(Configuration.ALGORITHM_MAP, null));
+        
+        _diffusionAlgo = null;
+	if (_algorithms != null){
+            for (String algoName : _algorithms.getAlgorithms().keySet()){
+		CommunityDetectionAlgorithm cda = _algorithms.getAlgorithms().get(algoName);
+                    if (cda.getInputDataFormat().equals("CXMATE_INPUT") &&
+			cda.getOutputDataFormat().equals("CXMATE_OUTPUT")){
+                        _diffusionAlgo = cda;
+			_logger.info("Found diffusion algorithm: {} - {} ",
+				     cda.getName(), cda.getDisplayName());
+			break;
+                    }
+            }
+	}
+        
         _timeOut = Long.parseLong(props.getProperty(Configuration.ALGORITHM_TIMEOUT, "180"));
         _mountOptions = props.getProperty(Configuration.MOUNT_OPTIONS, ":ro");
         _swaggerTitle = props.getProperty(Configuration.SWAGGER_TITLE, null);
@@ -179,6 +199,24 @@ public class Configuration {
     
     public String getSwaggerServer(){
         return getRunServerContextPath() + getRunServerApplicationPath();
+    }
+
+    /**
+     * Gets the diffusion algorithm if found in configuration
+     * @return 
+     */
+    public CommunityDetectionAlgorithm getDiffusionAlgorithm(){
+        return _diffusionAlgo;
+    }
+    
+    /**
+     * Gets the polling delay for diffusion which denotes how  
+     * long service should wait before checking if diffusion task
+     * is complete
+     * @return time in milliseconds
+     */
+    public long getDiffusionPollingDelay(){
+	return _diffusionPollingDelay;
     }
     
     /**
