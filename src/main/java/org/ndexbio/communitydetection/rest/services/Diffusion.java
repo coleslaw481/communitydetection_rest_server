@@ -167,7 +167,7 @@ public class Diffusion {
 		if (inputAttributeName != null){
 			customParams.put("--input_attribute_name", inputAttributeName);
 		}
-		if (inputAttributeName != null){
+		if (outputAttributeName != null){
 			customParams.put("--output_attribute_name", outputAttributeName);
 		}
 		if (customParams.isEmpty() == false){

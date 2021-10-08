@@ -19,6 +19,7 @@ import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -286,8 +287,54 @@ public class TestDiffusion {
             _folder.delete();
         }
     }
+    
+    @Test
+    public void testLegacyDiffusionTaskSuccessInvalidInputCX() throws Exception {
+        try {
+            File tempDir = _folder.newFolder();
+            File confFile = new File(tempDir.getAbsolutePath() + File.separator + "foo.conf");
+            
+            FileWriter fw = new FileWriter(confFile);
+            
+            fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
+			fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
+			fw.write(Configuration.ALGORITHM_MAP + " = "
+					+ TestDiffusion.
+							writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
+            fw.flush();
+            fw.close();
+            Dispatcher dispatcher = getDispatcher();
+            MockHttpRequest request = MockHttpRequest.post(Configuration.LEGACY_DIFFUSION_PATH);
+            ObjectMapper omappy = new ObjectMapper();
+            request.contentType(MediaType.APPLICATION_JSON);
+            
+            request.content("{".getBytes());
+
+			CommunityDetectionResult completeTask = new CommunityDetectionResult();
+			completeTask.setProgress(100);
+			completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
+			CXMateResult cxMateRes = new CXMateResult();
+			cxMateRes.setData(new TextNode("success"));
+			completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
+            MockHttpResponse response = new MockHttpResponse();
+            Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
+	    CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);			
+
+            Configuration.getInstance().setCommunityDetectionEngine(mockEngine);
+            dispatcher.invoke(request, response);
+            assertEquals(500, response.getStatus());
+            ObjectMapper mapper = new ObjectMapper();
+            CXMateResult cxRes = mapper.readValue(response.getOutput(),
+                    CXMateResult.class);
+            assertEquals(1, cxRes.getErrors().size());
+            assertTrue(cxRes.getErrors().get(0).getMessage().contains("Error parsing input data"));
+            
+        } finally {
+            _folder.delete();
+        }
+    }
 	
-	@Test
+    @Test
     public void testLegacyDiffusionTaskSuccessNoQueryArgs() throws Exception {
         try {
             File tempDir = _folder.newFolder();
@@ -332,6 +379,65 @@ public class TestDiffusion {
                     CXMateResult.class);
             assertEquals(0, cxRes.getErrors().size());
 			verify(mockEngine);
+            CommunityDetectionRequest theRequest = cappy.getValue();
+            assertEquals(null, theRequest.getCustomParameters());
+        } finally {
+            _folder.delete();
+        }
+    }
+    
+    @Test
+    public void testLegacyDiffusionTaskSuccessWithQueryArgs() throws Exception {
+        try {
+            File tempDir = _folder.newFolder();
+            File confFile = new File(tempDir.getAbsolutePath() + File.separator + "foo.conf");
+            
+            FileWriter fw = new FileWriter(confFile);
+            
+            fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
+			fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
+			fw.write(Configuration.ALGORITHM_MAP + " = "
+					+ TestDiffusion.
+							writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
+            fw.flush();
+            fw.close();
+            Dispatcher dispatcher = getDispatcher();
+            MockHttpRequest request = MockHttpRequest.post(Configuration.LEGACY_DIFFUSION_PATH
+                    + "?time=0.1&normalize_laplacian=false&input_attribute_name=theinput&output_attribute_name=theoutput");
+            ObjectMapper omappy = new ObjectMapper();
+            request.contentType(MediaType.APPLICATION_JSON);
+            
+            request.content(omappy.writeValueAsBytes(new TextNode("hi")));
+
+			CommunityDetectionResult completeTask = new CommunityDetectionResult();
+			completeTask.setProgress(100);
+			completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
+			CXMateResult cxMateRes = new CXMateResult();
+			cxMateRes.setData(new TextNode("success"));
+			completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
+            MockHttpResponse response = new MockHttpResponse();
+            Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
+			CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
+			expect(mockEngine.getResult("12345")).andReturn(completeTask);
+			
+			Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
+			expect(mockEngine.request(capture(cappy))).andReturn("12345");
+            replay(mockEngine);
+			
+            Configuration.getInstance().setCommunityDetectionEngine(mockEngine);
+            dispatcher.invoke(request, response);
+            assertEquals(200, response.getStatus());
+            ObjectMapper mapper = new ObjectMapper();
+            CXMateResult cxRes = mapper.readValue(response.getOutput(),
+                    CXMateResult.class);
+            assertEquals(0, cxRes.getErrors().size());
+			verify(mockEngine);
+            CommunityDetectionRequest theRequest = cappy.getValue();
+            assertEquals("0.1", theRequest.getCustomParameters().get("--time"));
+            assertEquals("false", theRequest.getCustomParameters().get("--normalize_laplacian"));
+            assertEquals("theinput", theRequest.getCustomParameters().get("--input_attribute_name"));
+            assertEquals("theoutput", theRequest.getCustomParameters().get("--output_attribute_name"));
+            
         } finally {
             _folder.delete();
         }
