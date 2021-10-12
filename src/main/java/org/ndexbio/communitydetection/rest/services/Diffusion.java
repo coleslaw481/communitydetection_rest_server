@@ -193,10 +193,19 @@ public class Diffusion {
 			
 			long pollingDelay = Configuration.getInstance().getDiffusionPollingDelay();
 			// Wait for completion by invoking status once per second
-			CommunityDetectionResult cRes = engine.getResult(id);
+                        CommunityDetectionResult unknownCRes = new CommunityDetectionResult();
+                        unknownCRes.setProgress(0);
+                        
+			CommunityDetectionResult cRes = unknownCRes;
 			while (cRes.getProgress() < 100){				
 				Thread.sleep(pollingDelay);
-				cRes = engine.getResult(id);
+                                try {
+                                    cRes = engine.getResult(id);
+                                } catch(Exception ex){
+                                    logger.info("Caught exception checking on status of task: ", ex);
+                                    // @TODO Should have a way to catch errors that are not transient
+                                   cRes = unknownCRes; 
+                                }
 			}
 			Response.Status taskStatus = Response.Status.INTERNAL_SERVER_ERROR;
 			// check if successful otherwise leave status as failed
