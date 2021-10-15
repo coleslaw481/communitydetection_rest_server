@@ -39,6 +39,7 @@ public class Configuration {
     public static final String ALGORITHM_TIMEOUT = "communitydetection.algorithm.timeout";
 
     public static final String MOUNT_OPTIONS = "communitydetection.mount.options";
+    public static final String DIFFUSION_ALGO = "communitydetection.diffusion.algorithm";
     public static final String DIFFUSION_POLLDELAY = "communitydetection.diffusion.polldelay";
     public static final String SWAGGER_TITLE = "swagger.title";
     public static final String SWAGGER_DESC = "swagger.description";
@@ -91,18 +92,17 @@ public class Configuration {
         _numWorkers = Integer.parseInt(props.getProperty(Configuration.NUM_WORKERS, "1"));
         _hostURL = props.getProperty(Configuration.HOST_URL, "");
         _dockerCmd = props.getProperty(Configuration.DOCKER_CMD, "docker");
-		_diffusionPollingDelay = Long.parseLong(props.getProperty(DIFFUSION_POLLDELAY, "100"));
+	_diffusionPollingDelay = Long.parseLong(props.getProperty(DIFFUSION_POLLDELAY, "100"));
         _algorithms = getAlgorithms(props.getProperty(Configuration.ALGORITHM_MAP, null));
         
+        String diffAlgoName = props.getProperty(Configuration.DIFFUSION_ALGO, null);
         _diffusionAlgo = null;
-	if (_algorithms != null){
+	if (_algorithms != null && diffAlgoName != null){
             for (String algoName : _algorithms.getAlgorithms().keySet()){
-		CommunityDetectionAlgorithm cda = _algorithms.getAlgorithms().get(algoName);
-                    if (cda.getInputDataFormat().equals("CXMATE_INPUT") &&
-			cda.getOutputDataFormat().equals("CXMATE_OUTPUT")){
-                        _diffusionAlgo = cda;
-			_logger.info("Found diffusion algorithm: {} - {} ",
-				     cda.getName(), cda.getDisplayName());
+                if (diffAlgoName.equals(algoName)){
+                    _diffusionAlgo = _algorithms.getAlgorithms().get(algoName);                    
+                    _logger.info("Found diffusion algorithm: {} - {} ",
+				 _diffusionAlgo.getName(), _diffusionAlgo.getDisplayName());
 			break;
                     }
             }
