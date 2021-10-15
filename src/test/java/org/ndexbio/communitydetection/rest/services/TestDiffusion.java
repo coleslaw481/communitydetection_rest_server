@@ -37,96 +37,96 @@ import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
  */
 public class TestDiffusion {
 	
-	public static final String YOUMUSTUSEPOST = "{\"data\":\"\",\"errors\":[{\"type\":"
-			+ "\"urn:cytoscape:communitydetection:unknown:405\",\"message\":\"youmustusethe"
-			+ "POSTmethodwiththisendpoint\",\"link\":\"https://github.com/cytoscape/commun"
-			+ "itydetection-rest-server\",\"status\":405}]}";
+    public static final String YOUMUSTUSEPOST = "{\"data\":\"\",\"errors\":[{\"type\":"
+                    + "\"urn:cytoscape:communitydetection:unknown:405\",\"message\":\"youmustusethe"
+                    + "POSTmethodwiththisendpoint\",\"link\":\"https://github.com/cytoscape/commun"
+                    + "itydetection-rest-server\",\"status\":405}]}";
 
-	@Rule
+    @Rule
     public TemporaryFolder _folder = new TemporaryFolder();
 
-	@After
-	public void tearDown(){
-		try {
-			Configuration.getInstance().setCommunityDetectionEngine(null);
-		} catch(Exception ex){
-			ex.printStackTrace();
-		}
+    @After
+    public void tearDown(){
+        try {
+            Configuration.getInstance().setCommunityDetectionEngine(null);
+        } catch(Exception ex){
+                ex.printStackTrace();
+        }
+    }
+	
+    public Dispatcher getDispatcher(){
+        Dispatcher dispatcher = MockDispatcherFactory.createDispatcher();
+        dispatcher.getRegistry().addSingletonResource(new Diffusion());
+        return dispatcher;
+    }
+	
+    public static String writeConfigurationForDiffusion(final String tempDir){
+        CommunityDetectionAlgorithms cdAlgos = new CommunityDetectionAlgorithms();
+        CommunityDetectionAlgorithm someAlgo = new CommunityDetectionAlgorithm();
+        someAlgo.setInputDataFormat("EDGELISTV2");
+        someAlgo.setOutputDataFormat("COMMUNITYDETECTRESULTV2");
+        someAlgo.setName("foo");
+        someAlgo.setDisplayName("Foo");
+        CommunityDetectionAlgorithm diffAlgo = new CommunityDetectionAlgorithm();
+        diffAlgo.setInputDataFormat("CXMATE_INPUT");
+        diffAlgo.setOutputDataFormat("CXMATE_OUTPUT");
+        diffAlgo.setName("legacydiffusion");
+        diffAlgo.setDisplayName("Legacy Diffusion");
+        LinkedHashMap<String, CommunityDetectionAlgorithm> algoList = new LinkedHashMap<>();
+        algoList.put(someAlgo.getName(), someAlgo);
+        algoList.put(diffAlgo.getName(), diffAlgo);
+        cdAlgos.setAlgorithms(algoList);
+        ObjectMapper oMapper = new ObjectMapper();
+        File algoConfig = new File(tempDir + File.separator + "algo.json");
+        try {
+                oMapper.writeValue(algoConfig, cdAlgos);
+        } catch(Exception ex){
+                ex.printStackTrace();
+        }
+        return algoConfig.getAbsolutePath();
+    }
+	
+	
+    @Test
+    public void testLegacyDiffusionDelete() throws Exception {   
+        Dispatcher dispatcher = getDispatcher();
+
+        MockHttpRequest request = MockHttpRequest.delete(Configuration.LEGACY_DIFFUSION_PATH);
+
+        MockHttpResponse response = new MockHttpResponse();            
+        dispatcher.invoke(request, response);
+        assertEquals(405, response.getStatus());
+        assertEquals(TestDiffusion.YOUMUSTUSEPOST,
+                        response.getContentAsString().replaceAll("\\s+", ""));
+    }
+	
+    @Test
+    public void testLegacyDiffusionGet() throws Exception {   
+        Dispatcher dispatcher = getDispatcher();
+
+        MockHttpRequest request = MockHttpRequest.get(Configuration.LEGACY_DIFFUSION_PATH);
+
+        MockHttpResponse response = new MockHttpResponse();            
+        dispatcher.invoke(request, response);
+        assertEquals(405, response.getStatus());
+        assertEquals(TestDiffusion.YOUMUSTUSEPOST,
+                        response.getContentAsString().replaceAll("\\s+", ""));
+    }
+	
+    @Test
+    public void testLegacyDiffusionPut() throws Exception {   
+        Dispatcher dispatcher = getDispatcher();
+
+        MockHttpRequest request = MockHttpRequest.put(Configuration.LEGACY_DIFFUSION_PATH);
+
+        MockHttpResponse response = new MockHttpResponse();            
+        dispatcher.invoke(request, response);
+        assertEquals(405, response.getStatus());
+        assertEquals(TestDiffusion.YOUMUSTUSEPOST,
+                        response.getContentAsString().replaceAll("\\s+", ""));
 	}
 	
-	public Dispatcher getDispatcher(){
-		Dispatcher dispatcher = MockDispatcherFactory.createDispatcher();
-		dispatcher.getRegistry().addSingletonResource(new Diffusion());
-		return dispatcher;
-	}
-	
-	public static String writeConfigurationForDiffusion(final String tempDir){
-		CommunityDetectionAlgorithms cdAlgos = new CommunityDetectionAlgorithms();
-		CommunityDetectionAlgorithm someAlgo = new CommunityDetectionAlgorithm();
-		someAlgo.setInputDataFormat("EDGELISTV2");
-		someAlgo.setOutputDataFormat("COMMUNITYDETECTRESULTV2");
-		someAlgo.setName("foo");
-		someAlgo.setDisplayName("Foo");
-		CommunityDetectionAlgorithm diffAlgo = new CommunityDetectionAlgorithm();
-		diffAlgo.setInputDataFormat("CXMATE_INPUT");
-		diffAlgo.setOutputDataFormat("CXMATE_OUTPUT");
-		diffAlgo.setName("legacydiffusion");
-		diffAlgo.setDisplayName("Legacy Diffusion");
-		LinkedHashMap<String, CommunityDetectionAlgorithm> algoList = new LinkedHashMap<>();
-		algoList.put(someAlgo.getName(), someAlgo);
-		algoList.put(diffAlgo.getName(), diffAlgo);
-		cdAlgos.setAlgorithms(algoList);
-		ObjectMapper oMapper = new ObjectMapper();
-		File algoConfig = new File(tempDir + File.separator + "algo.json");
-		try {
-			oMapper.writeValue(algoConfig, cdAlgos);
-		} catch(Exception ex){
-			ex.printStackTrace();
-		}
-		return algoConfig.getAbsolutePath();
-	}
-	
-	
-	@Test
-	public void testLegacyDiffusionDelete() throws Exception {   
-		Dispatcher dispatcher = getDispatcher();
-
-		MockHttpRequest request = MockHttpRequest.delete(Configuration.LEGACY_DIFFUSION_PATH);
-
-		MockHttpResponse response = new MockHttpResponse();            
-		dispatcher.invoke(request, response);
-		assertEquals(405, response.getStatus());
-		assertEquals(TestDiffusion.YOUMUSTUSEPOST,
-				response.getContentAsString().replaceAll("\\s+", ""));
-	}
-	
-	@Test
-	public void testLegacyDiffusionGet() throws Exception {   
-		Dispatcher dispatcher = getDispatcher();
-
-		MockHttpRequest request = MockHttpRequest.get(Configuration.LEGACY_DIFFUSION_PATH);
-
-		MockHttpResponse response = new MockHttpResponse();            
-		dispatcher.invoke(request, response);
-		assertEquals(405, response.getStatus());
-		assertEquals(TestDiffusion.YOUMUSTUSEPOST,
-				response.getContentAsString().replaceAll("\\s+", ""));
-	}
-	
-	@Test
-	public void testLegacyDiffusionPut() throws Exception {   
-		Dispatcher dispatcher = getDispatcher();
-
-		MockHttpRequest request = MockHttpRequest.put(Configuration.LEGACY_DIFFUSION_PATH);
-
-		MockHttpResponse response = new MockHttpResponse();            
-		dispatcher.invoke(request, response);
-		assertEquals(405, response.getStatus());
-		assertEquals(TestDiffusion.YOUMUSTUSEPOST,
-				response.getContentAsString().replaceAll("\\s+", ""));
-	}
-	
-	@Test
+    @Test
     public void testLegacyDiffusionNoAlgorithmNoEngine() throws Exception {
         try {
             File tempDir = _folder.newFolder();
@@ -160,7 +160,7 @@ public class TestDiffusion {
         }
     }
 	
-	@Test
+    @Test
     public void testLegacyDiffusionNoEngine() throws Exception {
         try {
             File tempDir = _folder.newFolder();
@@ -169,9 +169,9 @@ public class TestDiffusion {
             FileWriter fw = new FileWriter(confFile);
             
             fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
-			fw.write(Configuration.ALGORITHM_MAP + " = "
-					+ TestDiffusion.
-							writeConfigurationForDiffusion(tempDir.getAbsolutePath()));
+            fw.write(Configuration.DIFFUSION_ALGO + " = legacydiffusion\n");
+	    fw.write(Configuration.ALGORITHM_MAP + " = "
+		     + TestDiffusion.writeConfigurationForDiffusion(tempDir.getAbsolutePath()));
             fw.flush();
             fw.close();
             Dispatcher dispatcher = getDispatcher();
@@ -197,7 +197,7 @@ public class TestDiffusion {
         }
     }
 	
-	@Test
+    @Test
     public void testLegacyDiffusionNoIdFromEngine() throws Exception {
         try {
             File tempDir = _folder.newFolder();
@@ -206,9 +206,9 @@ public class TestDiffusion {
             FileWriter fw = new FileWriter(confFile);
             
             fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
-			fw.write(Configuration.ALGORITHM_MAP + " = "
-					+ TestDiffusion.
-							writeConfigurationForDiffusion(tempDir.getAbsolutePath()));
+            fw.write(Configuration.DIFFUSION_ALGO + " = legacydiffusion\n");
+            fw.write(Configuration.ALGORITHM_MAP + " = "
+		     + TestDiffusion.writeConfigurationForDiffusion(tempDir.getAbsolutePath()));
             fw.flush();
             fw.close();
             Dispatcher dispatcher = getDispatcher();
@@ -239,7 +239,7 @@ public class TestDiffusion {
         }
     }
 	
-	@Test
+    @Test
     public void testLegacyDiffusionTaskFailed() throws Exception {
         try {
             File tempDir = _folder.newFolder();
@@ -248,10 +248,10 @@ public class TestDiffusion {
             FileWriter fw = new FileWriter(confFile);
             
             fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
-			fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
-			fw.write(Configuration.ALGORITHM_MAP + " = "
-					+ TestDiffusion.
-							writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
+            fw.write(Configuration.DIFFUSION_ALGO + " = legacydiffusion\n");
+            fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
+            fw.write(Configuration.ALGORITHM_MAP + " = "
+		     + TestDiffusion.writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
             fw.flush();
             fw.close();
             Dispatcher dispatcher = getDispatcher();
@@ -261,17 +261,17 @@ public class TestDiffusion {
             
             request.content(omappy.writeValueAsBytes(TextNode.valueOf("hi")));
 
-			CommunityDetectionResult inCompleteTask = new CommunityDetectionResult();
-			inCompleteTask.setProgress(99);
-			CommunityDetectionResult completeTask = new CommunityDetectionResult();
-			completeTask.setProgress(100);
-			completeTask.setStatus(CommunityDetectionResult.FAILED_STATUS);
-			completeTask.setResult(new TextNode("some error"));
+            CommunityDetectionResult inCompleteTask = new CommunityDetectionResult();
+            inCompleteTask.setProgress(99);
+            CommunityDetectionResult completeTask = new CommunityDetectionResult();
+            completeTask.setProgress(100);
+            completeTask.setStatus(CommunityDetectionResult.FAILED_STATUS);
+            completeTask.setResult(new TextNode("some error"));
             MockHttpResponse response = new MockHttpResponse();
             Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
-			CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
-			expect(mockEngine.request(notNull())).andReturn("12345");
-			expect(mockEngine.getResult("12345")).andReturn(inCompleteTask).andReturn(completeTask);
+            CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
+            expect(mockEngine.request(notNull())).andReturn("12345");
+            expect(mockEngine.getResult("12345")).andReturn(inCompleteTask).andReturn(completeTask);
             replay(mockEngine);
 			
             Configuration.getInstance().setCommunityDetectionEngine(mockEngine);
@@ -296,10 +296,10 @@ public class TestDiffusion {
             FileWriter fw = new FileWriter(confFile);
             
             fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
-			fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
-			fw.write(Configuration.ALGORITHM_MAP + " = "
-					+ TestDiffusion.
-							writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
+            fw.write(Configuration.DIFFUSION_ALGO + " = legacydiffusion\n");
+            fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
+            fw.write(Configuration.ALGORITHM_MAP + " = "
+		     + TestDiffusion.writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
             fw.flush();
             fw.close();
             Dispatcher dispatcher = getDispatcher();
@@ -309,12 +309,12 @@ public class TestDiffusion {
             
             request.content("{".getBytes());
 
-			CommunityDetectionResult completeTask = new CommunityDetectionResult();
-			completeTask.setProgress(100);
-			completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
-			CXMateResult cxMateRes = new CXMateResult();
-			cxMateRes.setData(new TextNode("success"));
-			completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
+            CommunityDetectionResult completeTask = new CommunityDetectionResult();
+            completeTask.setProgress(100);
+            completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
+            CXMateResult cxMateRes = new CXMateResult();
+            cxMateRes.setData(new TextNode("success"));
+            completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
             MockHttpResponse response = new MockHttpResponse();
             Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
 	    CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);			
@@ -342,10 +342,10 @@ public class TestDiffusion {
             FileWriter fw = new FileWriter(confFile);
             
             fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
-			fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
-			fw.write(Configuration.ALGORITHM_MAP + " = "
-					+ TestDiffusion.
-							writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
+            fw.write(Configuration.DIFFUSION_ALGO + " = legacydiffusion\n");
+            fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
+            fw.write(Configuration.ALGORITHM_MAP + " = "
+		     + TestDiffusion.writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
             fw.flush();
             fw.close();
             Dispatcher dispatcher = getDispatcher();
@@ -355,19 +355,19 @@ public class TestDiffusion {
             
             request.content(omappy.writeValueAsBytes(new TextNode("hi")));
 
-			CommunityDetectionResult completeTask = new CommunityDetectionResult();
-			completeTask.setProgress(100);
-			completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
-			CXMateResult cxMateRes = new CXMateResult();
-			cxMateRes.setData(new TextNode("success"));
-			completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
+            CommunityDetectionResult completeTask = new CommunityDetectionResult();
+            completeTask.setProgress(100);
+            completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
+            CXMateResult cxMateRes = new CXMateResult();
+            cxMateRes.setData(new TextNode("success"));
+            completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
             MockHttpResponse response = new MockHttpResponse();
             Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
-			CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
-			expect(mockEngine.getResult("12345")).andReturn(completeTask);
-			
-			Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
-			expect(mockEngine.request(capture(cappy))).andReturn("12345");
+            CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
+            expect(mockEngine.getResult("12345")).andReturn(completeTask);
+
+            Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
+            expect(mockEngine.request(capture(cappy))).andReturn("12345");
             replay(mockEngine);
 			
             Configuration.getInstance().setCommunityDetectionEngine(mockEngine);
@@ -394,10 +394,10 @@ public class TestDiffusion {
             FileWriter fw = new FileWriter(confFile);
             
             fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
-			fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
-			fw.write(Configuration.ALGORITHM_MAP + " = "
-					+ TestDiffusion.
-							writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
+            fw.write(Configuration.DIFFUSION_ALGO + " = legacydiffusion\n");
+            fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
+            fw.write(Configuration.ALGORITHM_MAP + " = "
+		     + TestDiffusion.writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
             fw.flush();
             fw.close();
             Dispatcher dispatcher = getDispatcher();
@@ -408,19 +408,19 @@ public class TestDiffusion {
             
             request.content(omappy.writeValueAsBytes(new TextNode("hi")));
 
-			CommunityDetectionResult completeTask = new CommunityDetectionResult();
-			completeTask.setProgress(100);
-			completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
-			CXMateResult cxMateRes = new CXMateResult();
-			cxMateRes.setData(new TextNode("success"));
-			completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
+            CommunityDetectionResult completeTask = new CommunityDetectionResult();
+            completeTask.setProgress(100);
+            completeTask.setStatus(CommunityDetectionResult.COMPLETE_STATUS);
+            CXMateResult cxMateRes = new CXMateResult();
+            cxMateRes.setData(new TextNode("success"));
+            completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
             MockHttpResponse response = new MockHttpResponse();
             Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
-			CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
-			expect(mockEngine.getResult("12345")).andReturn(completeTask);
-			
-			Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
-			expect(mockEngine.request(capture(cappy))).andReturn("12345");
+            CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
+            expect(mockEngine.getResult("12345")).andReturn(completeTask);
+
+            Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
+            expect(mockEngine.request(capture(cappy))).andReturn("12345");
             replay(mockEngine);
 			
             Configuration.getInstance().setCommunityDetectionEngine(mockEngine);
