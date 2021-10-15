@@ -259,15 +259,14 @@ public class TestDiffusion {
             ObjectMapper omappy = new ObjectMapper();
             request.contentType(MediaType.APPLICATION_JSON);
             
-            request.content(omappy.writeValueAsBytes(new TextNode("hi")));
+            request.content(omappy.writeValueAsBytes(TextNode.valueOf("hi")));
 
 			CommunityDetectionResult inCompleteTask = new CommunityDetectionResult();
 			inCompleteTask.setProgress(99);
 			CommunityDetectionResult completeTask = new CommunityDetectionResult();
 			completeTask.setProgress(100);
 			completeTask.setStatus(CommunityDetectionResult.FAILED_STATUS);
-			CXMateResult cxMateRes = new CXMateResult("some error", "algo", 500, null); 
-			completeTask.setResult(omappy.readTree(cxMateRes.asJson()));
+			completeTask.setResult(new TextNode("some error"));
             MockHttpResponse response = new MockHttpResponse();
             Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
 			CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
