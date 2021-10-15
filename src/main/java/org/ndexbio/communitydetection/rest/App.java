@@ -418,11 +418,27 @@ public class App {
         sb.append("# Path to file containing json of algorithms\n");
         sb.append(Configuration.ALGORITHM_MAP + " = " + CD_ALGORITHMS_FILE + "\n\n");
         
-        sb.append("# Mount options, if unset :ro is used (podman may require :ro,z\n");
+        sb.append("# Name of Diffusion algorithm to serve on legacy POST endpoint\n");
+        sb.append("# NOTE: Should be set to name of algorithm\n");
+        sb.append("#       in algorithms json file.\n");
+        sb.append("# (Only set this to set up a diffusion service, can be commented out)\n");
+        sb.append("# " + Configuration.DIFFUSION_ALGO + " = networkheatdiffusion\n\n");
+        
+        sb.append("# Delay in milliseconds to wait while checking for completion of Diffusion\n");
+        sb.append("# (Only relevant if setting up diffusion service, can be commented out)\n");
+        sb.append("# " + Configuration.DIFFUSION_POLLDELAY + " = 100\n\n");
+        
+        sb.append("# Mount options, if unset :ro is used (podman may require :ro,z)\n");
         sb.append(Configuration.MOUNT_OPTIONS + " = :ro\n\n");
         
         sb.append("# Sets HOST URL prefix (value is prefixed to Location header when query is invoked. Can be commented out)\n");
-        sb.append("# " + Configuration.HOST_URL + " = http://ndexbio.org\n");
+        sb.append("# " + Configuration.HOST_URL + " = http://ndexbio.org\n\n");
+        
+        sb.append("# If set, overrides title shown in Swagger and openapi.json\n");
+        sb.append("# " + Configuration.SWAGGER_TITLE + " = my service\n\n");
+        
+        sb.append("# If set, overrides description shown in Swagger and openapi.json\n");
+        sb.append("# " + Configuration.SWAGGER_DESC + " = description of my service\n\n");
         
         sb.append("# Sets directory where log files will be written for Jetty web server\n");
         sb.append(App.RUNSERVER_LOGDIR + " = /tmp/logs\n\n");
