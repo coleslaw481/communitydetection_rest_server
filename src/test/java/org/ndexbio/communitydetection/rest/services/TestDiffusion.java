@@ -10,6 +10,7 @@ import org.easymock.Capture;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.notNull;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
@@ -29,6 +30,8 @@ import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithm;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
+import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionBadRequestException;
+import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionException;
 
 
 /**
@@ -332,6 +335,54 @@ public class TestDiffusion {
             _folder.delete();
         }
     }
+    
+    @Test
+    public void testLegacyDiffusionTaskBadRequest() throws Exception {
+        try {
+            File tempDir = _folder.newFolder();
+            File confFile = new File(tempDir.getAbsolutePath() + File.separator + "foo.conf");
+            
+            FileWriter fw = new FileWriter(confFile);
+            
+            fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
+            fw.write(Configuration.DIFFUSION_ALGO + " = legacydiffusion\n");
+            fw.write(Configuration.DIFFUSION_POLLDELAY + " = 0\n");
+            fw.write(Configuration.ALGORITHM_MAP + " = "
+		     + TestDiffusion.writeConfigurationForDiffusion(tempDir.getAbsolutePath()) + "\n");
+            fw.flush();
+            fw.close();
+            Dispatcher dispatcher = getDispatcher();
+            MockHttpRequest request = MockHttpRequest.post(Configuration.LEGACY_DIFFUSION_PATH);
+            ObjectMapper omappy = new ObjectMapper();
+            request.contentType(MediaType.APPLICATION_JSON);
+            
+            request.content(omappy.writeValueAsBytes(new TextNode("hi")));
+
+            MockHttpResponse response = new MockHttpResponse();
+            Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
+            CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
+            
+
+            Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
+            expect(mockEngine.request(capture(cappy))).andThrow(new CommunityDetectionBadRequestException("uhoh"));
+
+            replay(mockEngine);
+			
+            Configuration.getInstance().setCommunityDetectionEngine(mockEngine);
+            dispatcher.invoke(request, response);
+            assertEquals(500, response.getStatus());
+            ObjectMapper mapper = new ObjectMapper();
+            CXMateResult cxRes = mapper.readValue(response.getOutput(),
+                    CXMateResult.class);
+            assertEquals(1, cxRes.getErrors().size());
+            assertEquals("Bad request received : uhoh", cxRes.getErrors().get(0).getMessage());
+	    verify(mockEngine);
+            CommunityDetectionRequest theRequest = cappy.getValue();
+            assertEquals(null, theRequest.getCustomParameters());
+        } finally {
+            _folder.delete();
+        }
+    }
 	
     @Test
     public void testLegacyDiffusionTaskSuccessNoQueryArgs() throws Exception {
@@ -364,10 +415,16 @@ public class TestDiffusion {
             MockHttpResponse response = new MockHttpResponse();
             Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
             CommunityDetectionEngine mockEngine = createMock(CommunityDetectionEngine.class);
+            
+            //First check will raise an exception
+            expect(mockEngine.getResult("12345")).andThrow(new CommunityDetectionException("some error"));
+
+            //Second check will succeed 
             expect(mockEngine.getResult("12345")).andReturn(completeTask);
 
             Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
             expect(mockEngine.request(capture(cappy))).andReturn("12345");
+            mockEngine.delete("12345");
             replay(mockEngine);
 			
             Configuration.getInstance().setCommunityDetectionEngine(mockEngine);
@@ -377,7 +434,7 @@ public class TestDiffusion {
             CXMateResult cxRes = mapper.readValue(response.getOutput(),
                     CXMateResult.class);
             assertEquals(0, cxRes.getErrors().size());
-			verify(mockEngine);
+	    verify(mockEngine);
             CommunityDetectionRequest theRequest = cappy.getValue();
             assertEquals(null, theRequest.getCustomParameters());
         } finally {
@@ -421,6 +478,8 @@ public class TestDiffusion {
 
             Capture<CommunityDetectionRequest> cappy = Capture.newInstance();
             expect(mockEngine.request(capture(cappy))).andReturn("12345");
+            mockEngine.delete("12345");
+            expectLastCall().andThrow(new CommunityDetectionException("delete error"));
             replay(mockEngine);
 			
             Configuration.getInstance().setCommunityDetectionEngine(mockEngine);

@@ -212,6 +212,14 @@ public class Diffusion {
                 CXMateResult cError = new CXMateResult(cRes.getResult().asText(),
                                                        null, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), null);
                 return Response.serverError().type(MediaType.APPLICATION_JSON).entity(cError.asJson()).build();
+            } 
+            
+            try {
+                
+                engine.delete(id);
+            } catch(CommunityDetectionException delEx){
+                logger.error("Caught exception trying to delete completed task: "
+                        + id, delEx);
             }
 
             return Response.status(Response.Status.OK).type(MediaType.APPLICATION_JSON).entity(omapper.writeValueAsString(cRes.getResult())).build();
