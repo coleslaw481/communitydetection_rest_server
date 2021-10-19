@@ -252,10 +252,10 @@ public class App {
     }
     
     /**
-     * Gets {@link org.ndexbio.communitydetection.rest.services.Configuration.RUNSERVER_APP_PATH} 
+     * Gets {@link org.ndexbio.communitydetection.rest.services.Configuration#RUNSERVER_APP_PATH} 
      * from properties passed in
-     * @param props
-     * @return 
+     * @param props Properties to examine
+     * @return Application path
      */
     public static String getApplicationPath(Properties props){
         return props.getProperty(Configuration.RUNSERVER_APP_PATH, "/communitydetection");
@@ -263,10 +263,10 @@ public class App {
     
     /**
      * Loads properties from configuration file specified by {@code path}
-     * @param path
-     * @return
-     * @throws IOException
-     * @throws FileNotFoundException 
+     * @param path Path to configuration file
+     * @return Properties found in configuration file passed in
+     * @throws IOException thrown by {@link java.util.Properties#load(java.io.InputStream)}
+     * @throws FileNotFoundException thrown by {@link java.util.Properties#load(java.io.InputStream)}
      */
     public static Properties getPropertiesFromConf(final String path) throws IOException, FileNotFoundException {
         Properties props = new Properties();
@@ -278,7 +278,7 @@ public class App {
      * Generates an example community detection algorithms json string
      * with actual docker images
      * @return json string
-     * @throws Exception 
+     * @throws Exception If there is an error
      */
     public static String generateExampleCommunityDetectionAlgorithms() throws Exception {
         
@@ -417,7 +417,8 @@ public class App {
    
     /**
      * Generates example Configuration file writing to standard out
-     * @throws Exception 
+     * @throws Exception if there is an error
+     * @return example configuration
      */
     public static String generateExampleConfiguration() throws Exception {
         StringBuilder sb = new StringBuilder();
