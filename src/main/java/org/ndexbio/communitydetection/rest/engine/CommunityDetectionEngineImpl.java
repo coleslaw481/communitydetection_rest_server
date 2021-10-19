@@ -320,24 +320,35 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
 
     @Override
     public CommunityDetectionResult getResult(String id) throws CommunityDetectionException {
+        if (id == null){
+            throw new CommunityDetectionException("Id is null");
+        }
+        
         CommunityDetectionResult cdr = getCommunityDetectionResultFromDbOrFilesystem(id);
         if (cdr == null){
-            throw new CommunityDetectionException("No task with " + id + " found");
+            throw new CommunityDetectionException("No task with id of " + id + " found");
         }
         return cdr;
     }
 
     @Override
     public CommunityDetectionResultStatus getStatus(String id) throws CommunityDetectionException {
+        if (id == null){
+            throw new CommunityDetectionException("Id is null");
+        }
+        
         CommunityDetectionResult cdr = getCommunityDetectionResultFromDbOrFilesystem(id);
         if (cdr == null){
-            throw new CommunityDetectionException("No task with " + id + " found");
+            throw new CommunityDetectionException("No task with id of " + id + " found");
         }
         return new CommunityDetectionResultStatus(cdr);
     }
 
     @Override
     public void delete(String id) throws CommunityDetectionException {
+        if (id == null){
+            throw new CommunityDetectionException("id is null");
+        }
         _logger.debug("Deleting task " + id);
         if (_results.containsKey(id) == true){
             _results.remove(id);
