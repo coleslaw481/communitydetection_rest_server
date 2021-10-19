@@ -230,6 +230,13 @@ public class App {
 
     }
     
+    /**
+     * Gets Comma delimited list of classes that should be parsed by OpenAPI to
+     * generate Swagger documentation. If a diffusion algorithm was set in config,
+     * then that class will also be added.
+     * 
+     * @return Comma delimited list of classes as a String
+     */
     public static String getClassesToParseByOpenApi(){
         StringBuilder sb = new StringBuilder();
         sb.append("org.ndexbio.communitydetection.rest.services.CommunityDetection,");
@@ -244,10 +251,23 @@ public class App {
         return sb.toString();
     }
     
+    /**
+     * Gets {@link org.ndexbio.communitydetection.rest.services.Configuration.RUNSERVER_APP_PATH} 
+     * from properties passed in
+     * @param props
+     * @return 
+     */
     public static String getApplicationPath(Properties props){
         return props.getProperty(Configuration.RUNSERVER_APP_PATH, "/communitydetection");
     }
     
+    /**
+     * Loads properties from configuration file specified by {@code path}
+     * @param path
+     * @return
+     * @throws IOException
+     * @throws FileNotFoundException 
+     */
     public static Properties getPropertiesFromConf(final String path) throws IOException, FileNotFoundException {
         Properties props = new Properties();
         props.load(new FileInputStream(path));
