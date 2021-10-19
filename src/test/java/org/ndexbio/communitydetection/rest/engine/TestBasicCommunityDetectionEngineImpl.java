@@ -5,14 +5,36 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RejectedExecutionException;
+import org.easymock.Capture;
+import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.mock;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.ndexbio.communitydetection.rest.engine.util.CommunityDetectionRequestValidator;
+import org.ndexbio.communitydetection.rest.engine.util.DockerCommunityDetectionRunner;
+import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithm;
+import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
+import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
+import org.ndexbio.communitydetection.rest.model.ErrorResponse;
 import org.ndexbio.communitydetection.rest.model.ServerStatus;
+import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionBadRequestException;
+import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionException;
+import org.ndexbio.communitydetection.rest.services.Configuration;
 
 
 /**
@@ -30,14 +52,16 @@ public class TestBasicCommunityDetectionEngineImpl {
    
     @Test
     public void testthreadSleep() throws Exception {
-        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task", "docker", null, null);
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
         engine.updateThreadSleepTime(1);
         engine.threadSleep();
     }
     
     @Test
     public void testRunWithShutDownTrue(){
-        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task", "docker", null, null);
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
         engine.shutdown();
         engine.run();
     }
@@ -45,7 +69,8 @@ public class TestBasicCommunityDetectionEngineImpl {
     @Test
     public void testLogServerStatus(){
         // try with null
-        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task", "docker", null, null);
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
         engine.logServerStatus(null);
         
         // try with empty ServerStatus
@@ -61,7 +86,8 @@ public class TestBasicCommunityDetectionEngineImpl {
     
     @Test
     public void testgetCommunityDetectionResultFilePath(){
-        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task", "docker", null, null);
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
         String res = engine.getCommunityDetectionResultFilePath("12345");
         assertEquals("task/12345/" + CommunityDetectionEngineImpl.CDRESULT_JSON_FILE, res);
     }
@@ -71,7 +97,8 @@ public class TestBasicCommunityDetectionEngineImpl {
         try {
             
             File tempDir = _folder.newFolder();
-            CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, tempDir.getAbsolutePath(), "docker", null, null);
+            CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null,
+                    tempDir.getAbsolutePath(), "docker", null, null);
         
             //try with null 1st
             engine.saveCommunityDetectionResultToFilesystem(null);
@@ -101,7 +128,8 @@ public class TestBasicCommunityDetectionEngineImpl {
     @Test
     public void testlogResult() throws IOException {
       
-        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task", "docker", null, null);
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
         
         //try passing null
         engine.logResult(null);
@@ -125,7 +153,8 @@ public class TestBasicCommunityDetectionEngineImpl {
     public void testgetCommunityDetectionResultFromDbOrFilesystem() throws IOException {
         try {
             File tempDir = _folder.newFolder();
-            CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, tempDir.getAbsolutePath(), "docker", null, null);
+            CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null,
+                    tempDir.getAbsolutePath(), "docker", null, null);
             
             //try with invalid id
             assertNull(engine.getCommunityDetectionResultFromDbOrFilesystem("1"));
@@ -152,7 +181,211 @@ public class TestBasicCommunityDetectionEngineImpl {
             
         } finally {
             _folder.delete();
+        } 
+    }
+    
+    @Test
+    public void testRequestWhereRequestIsNull(){
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
+        try {
+            engine.request(null);
+            fail("Expected CommunityDetectionBadRequestException");
+        } catch(CommunityDetectionBadRequestException cdbe){
+            assertEquals("Request is null", cdbe.getMessage());
+        } catch(CommunityDetectionException cde){
+            fail("Unexpected exception: " + cde.getMessage());
         }
+    }
+    
+    @Test
+    public void testRequestNoAlgorithm(){
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
+        try {
+            CommunityDetectionRequest cdr = new CommunityDetectionRequest();
+            
+            engine.request(cdr);
+            fail("Expected CommunityDetectionBadRequestException");
+        } catch(CommunityDetectionBadRequestException cdbe){
+            assertEquals("No algorithm specified", cdbe.getMessage());
+        } catch(CommunityDetectionException cde){
+            fail("Unexpected exception: " + cde.getMessage());
+        }
+    }
+    
+    @Test
+    public void testRequestNoAlgorithmsSetInConstructor(){
         
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", null, null);
+        try {
+            CommunityDetectionRequest cdr = new CommunityDetectionRequest();
+            cdr.setAlgorithm("foo");
+            engine.request(cdr);
+            fail("Expected CommunityDetectionException");
+        } catch(CommunityDetectionBadRequestException cdbe){
+            fail("Unexpected exception: " + cdbe.getMessage());
+            
+        } catch(CommunityDetectionException cde){
+            assertEquals("No algorithms are available to run in service", cde.getMessage());
+        }
+    }
+    
+    @Test
+    public void testRequestNoAlgorithmsMatch(){
+        CommunityDetectionAlgorithms algos = new CommunityDetectionAlgorithms();
+        CommunityDetectionAlgorithm cda = new CommunityDetectionAlgorithm();
+        cda.setName("blah");
+        LinkedHashMap<String, CommunityDetectionAlgorithm> aMap = new LinkedHashMap<>();
+        aMap.put(cda.getName(), cda);
+        algos.setAlgorithms(aMap);
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task",
+                "docker", algos, null);
+        try {
+            CommunityDetectionRequest cdr = new CommunityDetectionRequest();
+            cdr.setAlgorithm("foo");
+            engine.request(cdr);
+            fail("Expected CommunityDetectionBadRequestException");
+        } catch(CommunityDetectionBadRequestException cdbe){
+            assertEquals("foo is not a valid algorithm", cdbe.getMessage());
+        } catch(CommunityDetectionException cde){
+            fail("Unexpected exception: " + cde.getMessage());
+            
+        }
+    }
+    
+    @Test
+    public void testRequestValidationFails(){
+        CommunityDetectionAlgorithms algos = new CommunityDetectionAlgorithms();
+        CommunityDetectionAlgorithm cda = new CommunityDetectionAlgorithm();
+        cda.setName("foo");
+        LinkedHashMap<String, CommunityDetectionAlgorithm> aMap = new LinkedHashMap<>();
+        aMap.put(cda.getName(), cda);
+        algos.setAlgorithms(aMap);
+        CommunityDetectionRequestValidator mockValidator = mock(CommunityDetectionRequestValidator.class);
+        CommunityDetectionRequest cdr = new CommunityDetectionRequest();
+        cdr.setAlgorithm("foo");
+        ErrorResponse er = new ErrorResponse();
+        er.setMessage("problem");
+        expect(mockValidator.validateRequest(cda, cdr)).andReturn(er);
+        replay(mockValidator);
+        CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(null, "task", 
+                "docker", algos, mockValidator);
+        try {
+            engine.request(cdr);
+            fail("Expected CommunityDetectionBadRequestException");
+        } catch(CommunityDetectionBadRequestException cdbe){
+            assertEquals("Validation failed", cdbe.getMessage());
+            assertEquals("problem", er.getMessage());
+        } catch(CommunityDetectionException cde){
+            fail("Unexpected exception: " + cde.getMessage());
+        }
+        verify(mockValidator);
+    }
+    
+    @Test
+    public void testRequestTaskCreationFails() throws IOException {
+        try {
+            File tempDir = _folder.newFolder();
+            
+            File confFile = new File(tempDir.getAbsolutePath() + File.separator + "foo.conf");
+            
+            FileWriter fw = new FileWriter(confFile);
+            
+            fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
+            fw.write(Configuration.MOUNT_OPTIONS + " = :ro,z\n");
+            fw.write(Configuration.ALGORITHM_TIMEOUT + " = 10\n");
+            
+            fw.flush();
+            fw.close();
+            Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
+            CommunityDetectionAlgorithms algos = new CommunityDetectionAlgorithms();
+            CommunityDetectionAlgorithm cda = new CommunityDetectionAlgorithm();
+            cda.setName("foo");
+            LinkedHashMap<String, CommunityDetectionAlgorithm> aMap = new LinkedHashMap<>();
+            aMap.put(cda.getName(), cda);
+            algos.setAlgorithms(aMap);
+            CommunityDetectionRequestValidator mockValidator = mock(CommunityDetectionRequestValidator.class);
+            CommunityDetectionRequest cdr = new CommunityDetectionRequest();
+            cdr.setAlgorithm("foo");
+
+            expect(mockValidator.validateRequest(cda, cdr)).andReturn(null);
+
+            ExecutorService mockES = mock(ExecutorService.class);
+            Capture<DockerCommunityDetectionRunner> cappy = Capture.newInstance();
+            expect(mockES.submit(capture(cappy))).andThrow(new RejectedExecutionException("failed"));
+            replay(mockES);
+            replay(mockValidator);
+            CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(mockES,
+                    tempDir.getAbsolutePath(), "docker", algos, mockValidator);
+            try {
+                engine.request(cdr);
+                fail("Expected CommunityDetectionException");
+            } catch(CommunityDetectionBadRequestException cdbe){
+                fail("Unexpected exception: " + cdbe.getMessage());
+            } catch(CommunityDetectionException cde){
+                assertEquals("failed", cde.getMessage());
+            }
+            
+            assertNotNull(cappy.getValue());
+            verify(mockValidator);
+        } finally {
+            _folder.delete();
+        }
+    }
+    
+    @Test
+    public void testRequestSuccess() throws IOException {
+        try {
+            File tempDir = _folder.newFolder();
+            
+            File confFile = new File(tempDir.getAbsolutePath() + File.separator + "foo.conf");
+            
+            FileWriter fw = new FileWriter(confFile);
+            
+            fw.write(Configuration.TASK_DIR + " = " + tempDir.getAbsolutePath() + "\n");
+            fw.write(Configuration.MOUNT_OPTIONS + " = :ro,z\n");
+            fw.write(Configuration.ALGORITHM_TIMEOUT + " = 10\n");
+            
+            fw.flush();
+            fw.close();
+            Configuration.setAlternateConfigurationFile(confFile.getAbsolutePath());
+            CommunityDetectionAlgorithms algos = new CommunityDetectionAlgorithms();
+            CommunityDetectionAlgorithm cda = new CommunityDetectionAlgorithm();
+            cda.setName("foo");
+            LinkedHashMap<String, CommunityDetectionAlgorithm> aMap = new LinkedHashMap<>();
+            aMap.put(cda.getName(), cda);
+            algos.setAlgorithms(aMap);
+            CommunityDetectionRequestValidator mockValidator = mock(CommunityDetectionRequestValidator.class);
+            CommunityDetectionRequest cdr = new CommunityDetectionRequest();
+            cdr.setAlgorithm("foo");
+
+            expect(mockValidator.validateRequest(cda, cdr)).andReturn(null);
+
+            ExecutorService mockES = mock(ExecutorService.class);
+            Capture<DockerCommunityDetectionRunner> cappy = Capture.newInstance();
+            FutureTask<CommunityDetectionResult> mockFT = mock(FutureTask.class);
+            expect(mockES.submit(capture(cappy))).andReturn(mockFT);
+            replay(mockFT);
+            replay(mockES);
+            replay(mockValidator);
+            CommunityDetectionEngineImpl engine = new CommunityDetectionEngineImpl(mockES,
+                    tempDir.getAbsolutePath(), "docker", algos, mockValidator);
+            try {
+                assertNotNull(engine.request(cdr));
+            } catch(CommunityDetectionBadRequestException cdbe){
+                fail("Unexpected exception: " + cdbe.getMessage());
+            } catch(CommunityDetectionException cde){
+                fail("Unexpected exception: " + cde.getMessage());
+            }
+            
+            assertNotNull(cappy.getValue());
+            verify(mockValidator);
+            verify(mockES);
+            verify(mockFT);
+        } finally {
+            _folder.delete();
+        }
     }
 }
