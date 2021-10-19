@@ -160,56 +160,95 @@ public class Configuration {
 	
     /**
      * Gets directory where enrichment task results should be stored
-     * @return 
+     * @return task directory
      */
     public String getTaskDirectory(){
         return _taskDir;
     }
     
+    /**
+     * Gets number of workers to process tasks
+     * @return number of workers
+     */
     public int getNumberWorkers(){
         return _numWorkers;
     }
     
+    /**
+     * Algorithm timeout
+     * @return seconds
+     */
     public long getAlgorithmTimeOut(){
         return _timeOut;
     }
     
+    /**
+     * Full path to docker command
+     * @return docker command
+     */
     public String getDockerCommand(){
         return _dockerCmd;
     }
     
+    /**
+     * Algorithms available from this service
+     * @return algorithms
+     */
     public CommunityDetectionAlgorithms getAlgorithms(){
         return _algorithms;
     }
     
+    /**
+     * Mount options needed by containers such as docker or pod
+     * @return usually :ro or :ro,z
+     */
     public String getMountOptions(){
         return _mountOptions;
     }
     
+    /**
+     * Alternate swagger title
+     * @return swagger title
+     */
     public String getSwaggerTitle(){
         return _swaggerTitle;
     }
     
+    /**
+     * Alternate swagger description
+     * @return swagger description
+     */
     public String getSwaggerDescription(){
         return _swaggerDescription;
     }
     
+    /**
+     * Run server context path
+     * @return context path
+     */
     public String getRunServerContextPath(){
         return _contextPath;
     }
     
+    /**
+     * Application path
+     * @return path
+     */
     public String getRunServerApplicationPath(){
         return _applicationPath;
     }
     
-    
+    /**
+     * URL for Swagger server
+     * @return URL
+     */
     public String getSwaggerServer(){
         return getRunServerContextPath() + getRunServerApplicationPath();
     }
 
     /**
      * Gets the diffusion algorithm if found in configuration
-     * @return 
+     * @return diffusion algorithm
      */
     public CommunityDetectionAlgorithm getDiffusionAlgorithm(){
         return _diffusionAlgo;
@@ -228,7 +267,7 @@ public class Configuration {
     /**
      * Gets singleton instance of configuration
      * @return {@link org.ndexbio.communitydetection.rest.services.Configuration} object with configuration loaded
-     * @throws EnrichmentException if there was a problem reading the configuration
+     * @throws CommunityDetectionException if there was a problem reading the configuration
      */
     public static Configuration getInstance() throws CommunityDetectionException
     {
@@ -264,7 +303,7 @@ public class Configuration {
     /**
      * Reloads configuration
      * @return {@link org.ndexbio.communitydetection.rest.services.Configuration} object
-     * @throws EnrichmentException if there was a problem reading the configuration
+     * @throws CommunityDetectionException if there was a problem reading the configuration
      */
     public static Configuration reloadConfiguration() throws CommunityDetectionException  {
         INSTANCE = null;
