@@ -64,7 +64,8 @@ public class CommunityDetection {
     static Logger _logger = LoggerFactory.getLogger(CommunityDetection.class);
     
     /**
-     * Handles requests to do enrichment
+     * Handles requests to run CommunityDetection
+     * @param query The task to run
      * @return {@link javax.ws.rs.core.Response} 
      */
     @POST 
