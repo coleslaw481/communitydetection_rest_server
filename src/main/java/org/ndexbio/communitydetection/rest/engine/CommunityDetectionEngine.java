@@ -16,15 +16,16 @@ public interface CommunityDetectionEngine extends Runnable {
     /**
      * Submits request for processing
      * @param request to process
+     * @throws CommunityDetectionException if there is an error
      * @return UUID as a string that is an identifier for query
      */
     public String request(CommunityDetectionRequest request) throws CommunityDetectionException;
      
     /**
      * Gets query results
-     * @param id
+     * @param id id of task
 
-     * @return
+     * @return result of task
      * @throws CommunityDetectionException  if there is an error
      */
     public CommunityDetectionResult getResult(final String id) throws CommunityDetectionException;
@@ -32,15 +33,15 @@ public interface CommunityDetectionEngine extends Runnable {
     
     /**
      * Gets query status
-     * @param id
-     * @return
+     * @param id id of task
+     * @return status of task
      * @throws CommunityDetectionException if there is an error
      */
     public CommunityDetectionResultStatus getStatus(final String id) throws CommunityDetectionException;
     
     /**
      * Deletes query
-     * @param id
+     * @param id id of task
      * @throws CommunityDetectionException if there is an error
      */
     public void delete(final String id) throws CommunityDetectionException;
@@ -48,15 +49,15 @@ public interface CommunityDetectionEngine extends Runnable {
     
     /**
      * Gets community detection algorithms supported by this service
-     * @retun
-     * @throws CommunityDetectionException 
+     * @throws CommunityDetectionException if there is an error
+     * @return algorithms
      */
     public CommunityDetectionAlgorithms getAlgorithms() throws CommunityDetectionException;
     
     /**
      * Gets status of server
-     * @return
-     * @throws CommunityDetectionException 
+     * @return status of server
+     * @throws CommunityDetectionException if there is an error
      */
     public ServerStatus getServerStatus() throws CommunityDetectionException;
     

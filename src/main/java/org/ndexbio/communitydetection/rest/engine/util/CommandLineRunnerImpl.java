@@ -21,7 +21,7 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
     
     /**
      * Sets the working directory for the process
-     * @param workingDir 
+     * @param workingDir path to working directory
      */
     @Override
     public void setWorkingDirectory(final String workingDir) {
@@ -30,7 +30,7 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
 
     /**
      * Sets environment variables for process
-     * @param envVars 
+     * @param envVars map where key is environment name and value is the value
      */
     @Override
     public void setEnvironmentVariables(Map<String, String> envVars) {
@@ -54,7 +54,7 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
      * @param stdErrFile File to write any standard
      * @param command command with arguments to run
      * @return exit code of process (if timeout exceeded, 500 is returned)
-     * @throws Exception 
+     * @throws Exception if there is an error
      */
     @Override
     public int runCommandLineProcess(long timeOut, TimeUnit unit,

@@ -86,7 +86,7 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
     
     /**
      * Sets milliseconds thread should sleep if no work needs to be done.
-     * @param sleepTime 
+     * @param sleepTime time in milliseconds
      */
     public void updateThreadSleepTime(long sleepTime){
         _threadSleep = sleepTime;
@@ -156,6 +156,7 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
     /**
      * Calls {@link #getServerStatus() } and dumps the status of the server as
      * a JSON string to the info level of the logger for this class
+     * @param ss status to log
      */
     protected void logServerStatus(final ServerStatus ss){
         try {
