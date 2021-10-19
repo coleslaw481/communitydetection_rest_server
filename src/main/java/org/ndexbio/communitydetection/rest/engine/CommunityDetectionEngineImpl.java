@@ -247,6 +247,10 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
             throw new CommunityDetectionBadRequestException("No algorithm specified");
         }
         
+        if (_algorithms == null || _algorithms.getAlgorithms() == null){
+            throw new CommunityDetectionException("No algorithms are available to run in service");
+        }
+        
         if (_algorithms.getAlgorithms().containsKey(request.getAlgorithm()) == false){
             throw new CommunityDetectionBadRequestException(request.getAlgorithm() 
                     + " is not a valid algorithm");
@@ -255,7 +259,7 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         CommunityDetectionAlgorithm cda = _algorithms.getAlgorithms().get(request.getAlgorithm());
         ErrorResponse er = this._validator.validateRequest(cda, request);
         if (er != null){
-            throw new CommunityDetectionBadRequestException("Bad request", er);
+            throw new CommunityDetectionBadRequestException("Validation failed", er);
         }
         
         String id = UUID.randomUUID().toString();
