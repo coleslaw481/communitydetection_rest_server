@@ -34,7 +34,7 @@ public class Status {
     
     /**
      * Returns status of server 
-     * @return {@link org.ndexbio.enrichment.rest.model.ServerStatus} as JSON
+     * @return {@link org.ndexbio.communitydetection.rest.model.ServerStatus} as JSON
      */
     @GET // This annotation indicates GET request
     @Path(Configuration.V_ONE_PATH + STATUS_PATH)

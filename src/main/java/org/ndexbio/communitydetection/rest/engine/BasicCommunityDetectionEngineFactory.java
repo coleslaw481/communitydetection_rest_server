@@ -27,7 +27,8 @@ public class BasicCommunityDetectionEngineFactory {
     
     /**
      * Temp directory where query results will temporarily be stored.
-     * @param tmpDir 
+     * @param config Configuration containing number of workers, task directory, docker command,
+     *               and algorithms.
      */
     public BasicCommunityDetectionEngineFactory(Configuration config){
         
@@ -41,6 +42,7 @@ public class BasicCommunityDetectionEngineFactory {
 
     /**
      * Creates CommunityDetectionEngine with a fixed threadpool to process requests
+     * @throws CommunityDetectionException if there is an error
      * @return {@link org.ndexbio.communitydetection.rest.engine.CommunityDetectionEngine} object 
      *         ready to service requests
      */
