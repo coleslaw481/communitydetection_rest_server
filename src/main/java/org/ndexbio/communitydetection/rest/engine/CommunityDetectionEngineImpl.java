@@ -66,6 +66,14 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
 
     private long _threadSleep = 10;
     
+    /**
+     * Constructor 
+     * @param es Executor Service to run tasks
+     * @param taskDir Base directory for tasks
+     * @param dockerCmd Docker command to run
+     * @param algorithms Algorithms that can be run by this object
+     * @param validator Validates requestsß
+     */
     public CommunityDetectionEngineImpl(ExecutorService es,
             final String taskDir,
             final String dockerCmd,
