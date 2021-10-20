@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Runs enrichment 
+ * Runs CommunityDetection tasks 
  * @author churas
  */
 public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
@@ -319,6 +319,12 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
 	_logger.info(sb.toString());
     }
 
+    /**
+     * Gets result with given {@code id}
+     * @param id Id of task
+     * @return The result
+     * @throws CommunityDetectionException If id is {@code null} or no task is found
+     */
     @Override
     public CommunityDetectionResult getResult(String id) throws CommunityDetectionException {
         if (id == null){
@@ -332,6 +338,12 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         return cdr;
     }
 
+    /**
+     * Gets status of task with given {@code id}
+     * @param id Id of task
+     * @return The result
+     * @throws CommunityDetectionException If id is {@code null} or no task is found
+     */
     @Override
     public CommunityDetectionResultStatus getStatus(String id) throws CommunityDetectionException {
         if (id == null){
@@ -345,6 +357,13 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         return new CommunityDetectionResultStatus(cdr);
     }
 
+    /**
+     * Deletes task with {@code id} from internally memory and from filesystem
+     * if found there
+     * 
+     * @param id Id of task to delete
+     * @throws CommunityDetectionException if {@code id} is null
+     */
     @Override
     public void delete(String id) throws CommunityDetectionException {
         if (id == null){
@@ -370,6 +389,11 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         }
     }
 
+    /**
+     * Gets algorithms available
+     * @return Available algorithms
+     * @throws CommunityDetectionException if no algorithms are found
+     */
     @Override
     public CommunityDetectionAlgorithms getAlgorithms() throws CommunityDetectionException {
         if (_algorithms == null){
@@ -378,6 +402,11 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         return _algorithms;
     }
 
+    /**
+     * Gets status of server
+     * @return Server status
+     * @throws CommunityDetectionException If there was an errorß
+     */
     @Override
     public ServerStatus getServerStatus() throws CommunityDetectionException {
         try {
