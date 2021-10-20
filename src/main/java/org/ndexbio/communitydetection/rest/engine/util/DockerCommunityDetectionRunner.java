@@ -44,6 +44,7 @@ public class DockerCommunityDetectionRunner implements Callable {
     private long _timeOut;
     private TimeUnit _timeUnit;
     private String _mountOptions;
+    private String _inputFilePath;
  
     private CommandLineRunner _runner;
     
@@ -85,7 +86,7 @@ public class DockerCommunityDetectionRunner implements Callable {
             _mountOptions = "";
         }
 
-        writeInputFile();
+        _inputFilePath = writeInputFile();
        
         _runner = new CommandLineRunnerImpl();
         
@@ -275,8 +276,6 @@ public class DockerCommunityDetectionRunner implements Callable {
         String mapDir = _workDir + ":" + _workDir + _mountOptions;
         _runner.setWorkingDirectory(_workDir);
         
-        String inputFile = writeInputFile();
-        
         File stdOutFile = getStandardOutFile();
         File stdErrFile = getStandardErrorFile();
         
@@ -306,7 +305,7 @@ public class DockerCommunityDetectionRunner implements Callable {
             } else {
                 _logger.debug("Custom Parameters is null");
             }
-            mCmd.add(inputFile);
+            mCmd.add(_inputFilePath);
             int  exitValue = _runner.runCommandLineProcess(_timeOut, _timeUnit,
                     stdOutFile, stdErrFile, mCmd.toArray(new String[0]));
             writeCommandRunToFile();
@@ -314,7 +313,7 @@ public class DockerCommunityDetectionRunner implements Callable {
             
         } catch(Exception ex){
             cdr.setStatus(CommunityDetectionResult.FAILED_STATUS);
-            cdr.setMessage("Received error trying to run detection: " + ex.getMessage());
+            cdr.setMessage("Received error trying to run task: " + ex.getMessage());
             _logger.error("Received error trying to run algorithm for task in " + _workDir, ex);
         }
         cdr.setProgress(100);
