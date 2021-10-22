@@ -5,7 +5,7 @@
       "displayName": "Louvain",
       "description": "Runs <a href='https://anaconda.org/conda-forge/louvain'>Louvain</a> community detection algorithm.<br/><br/>Louvain works by iteratively maximazing modularity in each community, building hierarchy from the bottom layer (single nodes) up to the root layer. NOTE: Louvain may not return a result with a fully connected network as input.<br/><br/><a href='https://github.com/idekerlab/cdlouvain'>Click here for more information</a>",
       "version": "0.2.0",
-      "dockerImage": "coleslawndex/cdlouvain:0.2.0",
+      "dockerImage": "docker.io/coleslawndex/cdlouvain:0.2.0",
       "inputDataFormat": "EDGELIST",
       "outputDataFormat": "COMMUNITYDETECTRESULT",
       "customParameters": [
@@ -76,7 +76,7 @@
       "displayName": "gProfiler",
       "description": "Uses <a href='https://pypi.org/project/gprofiler-official/'>Gprofiler</a> to find best term below pvalue cut offusing a list of genes as input. For more information <a href='https://github.com/idekerlab/cdgprofilergenestoterm'>click here</a>",
       "version": "0.3.0",
-      "dockerImage": "coleslawndex/cdgprofilergenestoterm:0.3.0",
+      "dockerImage": "docker.io/coleslawndex/cdgprofilergenestoterm:0.3.0",
       "inputDataFormat": "GENELIST",
       "outputDataFormat": "MAPPEDTERMJSON",
       "customParameters": [
@@ -135,7 +135,7 @@
       "displayName": "Enrichr",
       "description": "Uses <a href='http://amp.pharm.mssm.edu/Enrichr/'>Enrichr</a> to find best term below pvalue cut off using a list of genes as input. For more information <a href='https://github.com/idekerlab/cdenrichrgenestoterm'>click here</a>",
       "version": "0.3.0",
-      "dockerImage": "coleslawndex/cdenrichrgenestoterm:0.3.0",
+      "dockerImage": "docker.io/coleslawndex/cdenrichrgenestoterm:0.3.0",
       "inputDataFormat": "GENELIST",
       "outputDataFormat": "MAPPEDTERMJSON",
       "customParameters": [
@@ -170,7 +170,7 @@
       "displayName": "CliXO",
       "description": "Runs <a href='https://github.com/fanzheng10/CliXO'>CliXO</a> community detection algorithm.<br/><br/>Original paper: Kramer M, Dutkowski J, Yu M, Bafna V, Ideker T. Inferring gene ontologies from pairwise similarity data. Bioinformatics, 30: i34-i42. 2014. doi: 10.1093/bioinformatics/btu282<br/><br/>A classical method that iteratively detects hierarchy based on cliques from changing edge weight threshold.<br/>CliXO only works on graphs with edge weights.<br/>NOTE: For reasonable runtime, the maximum size of input network should not exceed hundreds of nodes.<br/><br/><a href='https://github.com/idekerlab/cdclixo'>Click here for more information</a>",
       "version": "0.1.0",
-      "dockerImage": "coleslawndex/cdclixo:0.1.0",
+      "dockerImage": "docker.io/coleslawndex/cdclixo:0.1.0",
       "inputDataFormat": "EDGELIST",
       "outputDataFormat": "COMMUNITYDETECTRESULT",
       "customParameters": [
@@ -205,7 +205,7 @@
       "displayName": "OSLOM",
       "description": "Runs <a href='http://www.oslom.org'>Order Statistics Local Optimization Method (OSLOM)</a> community detection algorithm.<br/><br/><a href='https://github.com/idekerlab/cdoslom'>Click here for more information</a>",
       "version": "0.3.0",
-      "dockerImage": "coleslawndex/cdoslom:0.3.0",
+      "dockerImage": "docker.io/coleslawndex/cdoslom:0.3.0",
       "inputDataFormat": "EDGELIST",
       "outputDataFormat": "COMMUNITYDETECTRESULT",
       "customParameters": [
@@ -276,7 +276,7 @@
       "displayName": "iQuery",
       "description": "Uses <a href='https://github.com/ndexbio/ndexsearch-rest'>Integrated Query</a> to find best term below pvalue cut off using a list of genes as input.",
       "version": "0.4.0",
-      "dockerImage": "coleslawndex/cdiquerygenestoterm:0.4.0",
+      "dockerImage": "docker.io/coleslawndex/cdiquerygenestoterm:0.4.0",
       "inputDataFormat": "GENELIST",
       "outputDataFormat": "MAPPEDTERMJSON",
       "customParameters": [
@@ -299,7 +299,7 @@
       "displayName": "Infomap",
       "description": "Runs <a href='https://www.mapequation.org'>Infomap</a> community detection algorithm.<br/><br/>A method based on Flux. Detect communities from dynamics on the network.<br/><br/><a href='https://github.com/idekerlab/cdinfomap'>Click here for more information</a>",
       "version": "0.1.0",
-      "dockerImage": "coleslawndex/cdinfomap:0.1.0",
+      "dockerImage": "docker.io/coleslawndex/cdinfomap:0.1.0",
       "inputDataFormat": "EDGELIST",
       "outputDataFormat": "COMMUNITYDETECTRESULT",
       "customParameters": [
@@ -358,7 +358,7 @@
       "displayName": "HiDeF",
       "description": "Runs <a href='https://github.com/fanzheng10/HiDeF'>HiDeF</a> community detection algorithm.<br/><br/>Paper: TODO<br/>NOTE: For reasonable runtime, the maximum size of input network should not exceed 20k nodes and 400k edges.<br/><br/><a href='https://github.com/idekerlab/cdhidef'>Click here for more information</a>",
       "version": "0.2.1",
-      "dockerImage": "coleslawndex/cdhidef:0.2.1",
+      "dockerImage": "docker.io/coleslawndex/cdhidef:0.2.1",
       "inputDataFormat": "EDGELISTV2",
       "outputDataFormat": "COMMUNITYDETECTRESULTV2",
       "customParameters": [
