@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.servers.Server;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.Consumes;
@@ -214,8 +213,11 @@ public class Diffusion {
                 return Response.serverError().type(MediaType.APPLICATION_JSON).entity(cError.asJson()).build();
             } 
             
+            // we had a successful run, so delete the task
+            // @TODO at some point it would be nice to put this
+            //       work somewhere else so the user can get 
+            //       the result quicker.
             try {
-                
                 engine.delete(id);
             } catch(CommunityDetectionException delEx){
                 logger.error("Caught exception trying to delete completed task: "
