@@ -1,0 +1,64 @@
+{
+  "algorithms": {
+    "networkheatdiffusion": {
+      "name": "networkheatdiffusion",
+      "displayName": "Network Heat Diffusion",
+      "description": "Runs network heat diffusion",
+      "version": "0.0.1",
+      "dockerImage": "coleslawndex/cddiffusion:0.0.1",
+      "inputDataFormat": "CXMATE_INPUT",
+      "outputDataFormat": "CXMATE_OUTPUT",
+      "customParameters": [
+        {
+          "name": "--input_attribute_name",
+          "displayName": "Input Attribute name",
+          "description": "If set, input is treated as directed graph",
+          "type": "value",
+          "defaultValue": "diffusion_input",
+          "validationType": "string",
+          "validationHelp": null,
+          "validationRegex": null,
+          "minValue": null,
+          "maxValue": null
+        },
+        {
+          "name": "--output_attribute_name",
+          "displayName": "Output Attribute name",
+          "description": "If set, input is treated as directed graph",
+          "type": "value",
+          "defaultValue": "diffusion_output",
+          "validationType": "string",
+          "validationHelp": null,
+          "validationRegex": null,
+          "minValue": null,
+          "maxValue": null
+        },
+        {
+          "name": "--time",
+          "displayName": "Time",
+          "description": "Guides number of communities the algorithm will detect. Higher the value the more communities detected.",
+          "type": "value",
+          "defaultValue": "0.1",
+          "validationType": "number",
+          "validationHelp": null,
+          "validationRegex": null,
+          "minValue": 0.0,
+          "maxValue": 1.0
+        },
+        {
+          "name": "--normalize_laplacian",
+          "displayName": "normalize_laplacian",
+          "description": "If set, generate deep hierarchy, otherwise algorithm will just create clusters",
+          "type": "flag",
+          "defaultValue": null,
+          "validationType": null,
+          "validationHelp": null,
+          "validationRegex": null,
+          "minValue": null,
+          "maxValue": null
+        }
+      ]
+    }
+  }
+}
+
