@@ -24,30 +24,36 @@ chown -R cdrunner.cdrunner /opt/communitydetection
 
 Copy communitydetection.conf to /etc
 
-3) Copy jar
+NOTE: If this will be a diffusion service, uncomment communitydetection.diffusion.algorithm property
+
+3) Create algorithms file
+
+Copy communitydetectionalgorithms.json to /etc
+
+NOTE: If this will be a diffusion service, copy diffusionalgorithm.json to /etc/communitydetectionalgorithms.json
+
+4) Copy jar
 
 Build community detection jar with dependencies and put
 in /opt/communitydetection directory. Also
 create a hardlink to the specific jar named communitydetection-rest.jar
 (symlink won't work for systemd)
 
-4) Create systemd file
+5) Create systemd file
 
 Copy communitydetection.service to /lib/systemd/system
 cd /lib/systemd/system
 
-5) Register script with systemd
+6) Register script with systemd
 
 systemctl daemon-reload
 cd /lib/systemd/system
 systemctl enable communitydetection
 systemctl start communitydetection
 
-6) Verify its running
+7) Verify its running
 
 ps -elf | grep communitydetection
 
 # output
 4 S cdrunner 18929     1 19  80   0 - 9280026 futex_ 11:57 ?      00:00:01 /bin/java -jar /opt/communitydetection/communitydetection-rest.jar --mode runserver --conf /etc/communitydetection.conf
-
-
