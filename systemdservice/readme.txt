@@ -1,11 +1,11 @@
 The instructions in this readme provide steps
 to install Community Detection REST service as a service managed by systemd.
 These instructions use the files in this directory and require
-a centos 7 box with superuser access.
+a Rocky Linux 8 box with superuser access.
 
 # Requirements
 
-* docker 
+* podman (dnf install podman)
 * cdrunner user added (useradd cdrunner)
 * cdrunner user added to docker group (usermod -a -G docker cdrunner)
 * java 11 installed and in path
