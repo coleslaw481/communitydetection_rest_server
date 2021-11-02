@@ -37,6 +37,10 @@ def _parse_arguments(desc, args):
                                      formatter_class=Formatter)
     parser.add_argument('logdir',
                         help='Directory containing log files')
+    parser.add_argument('--monthlyreport', default=12, type=int,
+                        help='If set, appends report tabulating jobs per '
+                             'month going back number of complete months '
+                             'passed in from --end_date')
     parser.add_argument('--logsuffix', default='.log',
                         help='Suffix of log files')
     parser.add_argument('--window', default=30, type=int,
@@ -270,6 +274,61 @@ def send_report_as_email(theargs, report_str, end_date=None):
     smtp_obj.quit()
 
 
+def convert_logs_to_dict(logdir=None, err_stream=sys.stderr):
+    """
+
+    :param log_dir:
+    :param err_stream:
+    :return:
+    """
+    data_dict = {}
+    logfiles = [x for x in log_file_generator(os.path.abspath(logdir))]
+    logfiles.sort()
+    for logfile in logfiles:
+        add_stats_from_logfile(logfile=logfile,
+                               data_dict=data_dict,
+                               err_stream=err_stream)
+    return data_dict
+
+
+def get_previous_month_tuple_from_date(the_date=None):
+    """
+
+    :param the_date:
+    :return:
+    """
+    first_day_of_this_month = the_date.replace(day=1)
+    last_day_of_prev_month = first_day_of_this_month - timedelta(days=1)
+    start_day_of_prev_month = last_day_of_prev_month.replace(day=1)
+    return start_day_of_prev_month, first_day_of_this_month
+
+
+def monthly_report(theargs, out_stream=sys.stdout,
+               err_stream=sys.stderr, end_date=None):
+    """
+    Going back theargs.monthlyreport months get count of
+    jobs run each complete month from end_date.
+    :param theargs:
+    :param out_stream:
+    :param err_stream:
+    :param end_date:
+    :return:
+    """
+    data_dict = convert_logs_to_dict(theargs.logdir, err_stream=err_stream)
+    cur_date = end_date
+    the_dates = []
+    out_stream.write('\n#### summary stats from last ' +
+                     str(theargs.monthlyreport) + ' months\n\n')
+    out_stream.write('Month\t# Total Jobs\n')
+    for x in range(theargs.monthlyreport):
+        mon_start, mon_end = get_previous_month_tuple_from_date(cur_date)
+        the_dates.append((mon_start, mon_end))
+        filtered_dict = filter_by_date(data_dict, start_date=mon_start, end_date=mon_end)
+        filtered_total_jobs = len(filtered_dict)
+        out_stream.write(mon_start.strftime('%m-%Y') + '\t' + str(filtered_total_jobs) + '\n')
+        cur_date = mon_start
+
+
 def parse_logs(theargs, out_stream=sys.stdout,
                err_stream=sys.stderr, end_date=None):
     """
@@ -281,13 +340,7 @@ def parse_logs(theargs, out_stream=sys.stdout,
     :param err_stream:
     :return:
     """
-    data_dict = {}
-    logfiles = [x for x in log_file_generator(os.path.abspath(theargs.logdir))]
-    logfiles.sort()
-    for logfile in logfiles:
-        add_stats_from_logfile(logfile=logfile,
-                               data_dict=data_dict,
-                               err_stream=err_stream)
+    data_dict = convert_logs_to_dict(theargs.logdir, err_stream=err_stream)
 
     start_date = end_date - timedelta(days=theargs.window)
     filtered_dict = filter_by_date(data_dict, start_date=start_date, end_date=end_date)
@@ -334,7 +387,11 @@ def main(args):
             end_date = datetime.fromisoformat(theargs.end_date)
         else:
             end_date = datetime.today()
+
         parse_logs(theargs, out_str, sys.stderr, end_date=end_date)
+
+        if theargs.monthlyreport is not None:
+            monthly_report(theargs, out_stream=out_str, end_date=end_date)
         if theargs.emails is not None:
             send_report_as_email(theargs, out_str.getvalue(),
                                  end_date=end_date)
