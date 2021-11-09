@@ -1,0 +1,115 @@
+{
+  "algorithms" : {
+    "networkxspringlayout" : {
+      "name" : "networkxspringlayout",
+      "displayName" : "NetworkX Spring Layout",
+      "description" : "Runs NetworkX Spring Layout",
+      "version" : "0.0.2",
+      "dockerImage" : "coleslawndex/cdspringlayout:0.0.2",
+      "inputDataFormat" : "CX",
+      "outputDataFormat" : "CARTESIANLYAOUTRESULT",
+      "customParameters" : [ {
+        "name" : "--k",
+        "displayName" : "Node distance (k)",
+        "description" : "Optimal distance between nodes. If unset the distance is set to 1/sqrt(n) where n is the numer of nodes. Increase this value to move nodes farther apart",
+        "type" : "value",
+        "defaultValue" : null,
+        "validationType" : "number",
+        "validationHelp" : "Should be a number",
+        "validationRegex" : null,
+        "minValue" : null,
+        "maxValue" : null
+      },
+      {
+        "name" : "--iterations",
+        "displayName" : "Iterations",
+        "description" : "Maximum number of iterations taken",
+        "type" : "value",
+        "defaultValue" : "50",
+        "validationType" : "digits",
+        "validationHelp" : "Should be either unset or a whole number",
+        "validationRegex" : null,
+        "minValue" : null,
+        "maxValue" : null
+      },
+      {
+        "name" : "--weight",
+        "displayName" : "Weight",
+        "description" : "Name of edge attribute that holds the numerical value used for the edge weight. Larger means a stronger attractive force. If unset, all edge weights are 1",
+        "type" : "value",
+        "defaultValue" : null,
+        "validationType" : "string",
+        "validationHelp" : "Should be the name of an edge attribute with weight",
+        "validationRegex" : null,
+        "minValue" : null,
+        "maxValue" : null
+      }]
+    },
+    "igraphlayout" : {
+      "name" : "igraphlayout",
+      "displayName" : "Python IGraph Layout",
+      "description" : "Runs Python IGraph Layout",
+      "version" : "0.0.1",
+      "dockerImage" : "coleslawndex/cdigraphlayout:0.0.1",
+      "inputDataFormat" : "CX",
+      "outputDataFormat" : "CARTESIANLYAOUTRESULT",
+      "customParameters" : [ {
+        "name" : "--layout",
+        "displayName" : "Layout Algorithm",
+        "description" : "Layout algorithm to use. Must be one of the following: auto, circle, drl, fr, kk, lgl, random, rt, or rt_circular. (if unset, auto is used) For description see https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms",
+        "type" : "value",
+        "defaultValue" : null,
+        "validationType" : "string",
+        "validationHelp" : "Must be one of the supported algorithms",
+        "validationRegex" : "auto|circle|drl|fr|kk|lgl|random|rt|rt_circular",
+        "minValue" : null,
+        "maxValue" : null
+      },
+      {
+        "name" : "--scale",
+        "displayName" : "Scale",
+        "description" : "If set, scales layout positions with value passed in",
+        "type" : "value",
+        "defaultValue" : null,
+        "validationType" : "number",
+        "validationHelp" : "Should be either unset or a number",
+        "validationRegex" : null,
+        "minValue" : null,
+        "maxValue" : null
+      },
+      {
+        "name" : "--fit_into",
+        "displayName" : "Fit Into",
+        "description" : "If set, adjusts layout coordinates to fit in bounding box passed in. Value should be a comma delimited list of floating point positions in format LEFT,TOP,RIGHT,BOTTOM ex: 0.0,0.0,500.0,600.0",
+        "type" : "value",
+        "defaultValue" : null,
+        "validationType" : "string",
+        "validationHelp" : "Should be comma delimited list of floating point positions in format LEFT,TOP,RIGHT,BOTTOM ex: 0.0,0.0,500.0,600.0",
+        "validationRegex" : null,
+        "minValue" : null,
+        "maxValue" : null
+      }]
+    },
+    "cytojslayout" : {
+      "name" : "cytojslayout",
+      "displayName" : "Cytoscape JS layout",
+      "description" : "Runs Cytoscape JS layouts",
+      "version" : "0.0.1",
+      "dockerImage" : "localhost/coleslawndex/cdcytojslayout:0.0.1",
+      "inputDataFormat" : "CX",
+      "outputDataFormat" : "CARTESIANLYAOUTRESULT",
+      "customParameters" : [ {
+        "name" : "--layout",
+        "displayName" : "Layout Algorithm",
+        "description" : "Layout algorithm to use. Must be one of the following: circle, cose, grid, concentric, breadthfirst. (if unset, cose is used) For description see https://js.cytoscape.org/",
+        "type" : "value",
+        "defaultValue" : null,
+        "validationType" : "string",
+        "validationHelp" : "Must be one of the supported algorithms",
+        "validationRegex" : "circle|cose|grid|concentric|breadthfirst",
+        "minValue" : null,
+        "maxValue" : null
+      }]
+    }
+  }
+}
