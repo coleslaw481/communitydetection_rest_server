@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import org.ndexbio.communitydetection.rest.model.BinaryData;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
 import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionException;
@@ -45,10 +46,63 @@ public class DockerCommunityDetectionRunner implements Callable {
     private TimeUnit _timeUnit;
     private String _mountOptions;
     private String _inputFilePath;
+	private boolean _outputIsBinary;
+	private String _rawResultContentType;
  
     private CommandLineRunner _runner;
     
     /**
+     * Constructor 
+     * @param id id of task (should be a 37 char uuid string)
+     * @param cdr The request to process
+     * @param startTime Time task started in ms since epoch (1969)
+     * @param taskDir Base directory for tasks (this task will be put into taskDir/id)
+     * @param dockerCmd Command to run docker (/usr/bin/docker /bin/docker etc..)
+     * @param dockerImage Docker image to run (hello-world)
+     * @param customParameters Parameters to add to command line
+     * @param timeOut Any task exceeding this time (in unit set by unit) will be killed
+     * @param unit Unit to use for timeout
+     * @param mountOptions flags used by container to mount filesystem
+	 * @param outputIsBinary if true then output from container is binary
+	 * @param rawResultContentType denotes mime type of result data
+     * @throws Exception If there is an issue writing the input data from the cdr object
+     */
+    public DockerCommunityDetectionRunner(final String id,
+            final CommunityDetectionRequest cdr, final long startTime, final String taskDir,
+            final String dockerCmd, final String dockerImage,
+            final Map<String, String> customParameters,
+            final long timeOut,
+            final TimeUnit unit,
+            final String mountOptions,
+			final boolean outputIsBinary,
+			final String rawResultContentType) throws Exception{
+        _id = id;
+        _cdr = cdr;
+        _dockerCmd = dockerCmd;
+        _dockerImage = dockerImage;
+        _customParameters = customParameters;
+        _startTime = startTime;
+        _taskDir = taskDir;
+        _workDir = _taskDir + File.separator + _id;
+        _timeOut = timeOut;
+        _timeUnit = unit;
+        if (mountOptions != null){
+            _mountOptions = mountOptions;
+        }
+        else {
+            _mountOptions = "";
+        }
+		
+		_outputIsBinary = outputIsBinary;
+		_rawResultContentType = rawResultContentType;
+
+        _inputFilePath = writeInputFile();
+       
+        _runner = new CommandLineRunnerImpl();
+        
+    }
+	
+	/**
      * Constructor 
      * @param id id of task (should be a 37 char uuid string)
      * @param cdr The request to process
@@ -69,27 +123,8 @@ public class DockerCommunityDetectionRunner implements Callable {
             final long timeOut,
             final TimeUnit unit,
             final String mountOptions) throws Exception{
-        _id = id;
-        _cdr = cdr;
-        _dockerCmd = dockerCmd;
-        _dockerImage = dockerImage;
-        _customParameters = customParameters;
-        _startTime = startTime;
-        _taskDir = taskDir;
-        _workDir = _taskDir + File.separator + _id;
-        _timeOut = timeOut;
-        _timeUnit = unit;
-        if (mountOptions != null){
-            _mountOptions = mountOptions;
-        }
-        else {
-            _mountOptions = "";
-        }
-
-        _inputFilePath = writeInputFile();
-       
-        _runner = new CommandLineRunnerImpl();
-        
+        this(id, cdr, startTime, taskDir, dockerCmd, dockerImage, customParameters,
+				timeOut, unit, mountOptions, false, null);
     }
     
     /**
@@ -202,7 +237,23 @@ public class DockerCommunityDetectionRunner implements Callable {
             _logger.error(outFile.getAbsolutePath() + " does not exist or is not a file");
             return;
         }
-        ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = new ObjectMapper();
+
+		// if job succeeded and output is binary 
+		// then dont load the contents of stdout.txt into
+		// json, instead add the data type and size of result for now
+		// at some point we might also want a URL so caller can just grab that
+		// to get the result from the server
+		
+		if (_outputIsBinary && cdr.getStatus().equals(CommunityDetectionResult.COMPLETE_STATUS)){
+			BinaryData bData = new BinaryData();
+			bData.setContentType(_rawResultContentType);
+			bData.setSizeInBytes(outFile.length());
+			bData.setDownloadUrl("Filled in by REST endpoint");
+			cdr.setResult(mapper.valueToTree(bData));
+			return;
+		}
+		
         try {
             cdr.setResult(mapper.readTree(outFile));
         } catch(JsonParseException jpe){

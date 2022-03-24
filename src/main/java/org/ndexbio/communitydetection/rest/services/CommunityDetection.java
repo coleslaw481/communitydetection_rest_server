@@ -1,6 +1,5 @@
 package org.ndexbio.communitydetection.rest.services; // Note your package will be {{ groupId }}.rest
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,24 +16,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.servers.Server;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStream;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
 import org.ndexbio.communitydetection.rest.engine.CommunityDetectionEngine;
-import org.ndexbio.communitydetection.rest.model.CXMateResult;
-import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithm;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResultStatus;
 import org.ndexbio.communitydetection.rest.model.ErrorResponse;
+import org.ndexbio.communitydetection.rest.model.JobStatus;
 import org.ndexbio.communitydetection.rest.model.Task;
 import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionBadRequestException;
 import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionException;
@@ -158,7 +152,38 @@ public class CommunityDetection {
             if (eqr == null){
                 return Response.status(410).build();
             }
+			
             return Response.ok().type(MediaType.APPLICATION_JSON).entity(omappy.writeValueAsString(eqr)).build();
+        }
+        catch(Exception ex){
+            ErrorResponse er = new ErrorResponse("Error getting results for id: " + id, ex);
+            return Response.status(500).type(MediaType.APPLICATION_JSON).entity(er.asJson()).build();
+        }
+    }
+	
+	@GET 
+    @Path(Configuration.V_ONE_PATH + "/raw/{id}")
+    @Operation(summary = "Get raw result of task",
+               description="Gets the raw result with no job status or other information.",
+               responses = {
+                   @ApiResponse(responseCode = "200",
+                           description = "Success"),
+                   @ApiResponse(responseCode = "500", description = "Server Error",
+                                content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                schema = @Schema(implementation = ErrorResponse.class)))
+               })
+    public Response getResultData(@PathParam("id") final String id) {
+        try {
+            CommunityDetectionEngine engine = Configuration.getInstance().getCommunityDetectionEngine();
+            if (engine == null){
+                throw new NullPointerException("CommunityDetection Engine not loaded");
+            }
+			InputStream in = engine.getResultData(id);
+			if (in == null){
+				// @TODO need to try to load result and give user more information here
+				throw new CommunityDetectionException("Error generating result");
+			}
+			return Response.ok().type(engine.getResultDataType(id)).entity(in).build();
         }
         catch(Exception ex){
             ErrorResponse er = new ErrorResponse("Error getting results for id: " + id, ex);

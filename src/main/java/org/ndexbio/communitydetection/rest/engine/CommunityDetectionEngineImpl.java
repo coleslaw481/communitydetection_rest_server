@@ -2,8 +2,11 @@ package org.ndexbio.communitydetection.rest.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.util.Arrays;
@@ -20,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.FileUtils;
 import org.ndexbio.communitydetection.rest.engine.util.CommunityDetectionRequestValidator;
 import org.ndexbio.communitydetection.rest.engine.util.DockerCommunityDetectionRunner;
+import org.ndexbio.communitydetection.rest.model.BinaryData;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithm;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
@@ -45,6 +49,9 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
     public static final String CDREQUEST_JSON_FILE = "cdrequest.json";
     
     public static final String CDRESULT_JSON_FILE = "cdresult.json";
+	
+	// @TODO rethink what we want to name this
+	public static final String RESULT_DATA_FILE = "stdout.txt";
     
     static Logger _logger = LoggerFactory.getLogger(CommunityDetectionEngineImpl.class);
 
@@ -185,6 +192,10 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
     protected String getCommunityDetectionResultFilePath(final String id){
         return this._taskDir + File.separator + id + File.separator + CommunityDetectionEngineImpl.CDRESULT_JSON_FILE;
     }
+	
+	protected String getCommunityDetectionResultDataFilePath(final String id){
+		return this._taskDir + File.separator + id + File.separator + CommunityDetectionEngineImpl.RESULT_DATA_FILE;
+    }
 
     protected void saveCommunityDetectionResultToFilesystem(final CommunityDetectionResult cdr){
         if (cdr == null){
@@ -284,7 +295,8 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
             _taskDir, _dockerCmd, dockerImage, request.getCustomParameters(),
                     Configuration.getInstance().getAlgorithmTimeOut(),
             TimeUnit.SECONDS,
-            Configuration.getInstance().getMountOptions());
+            Configuration.getInstance().getMountOptions(),
+					cda.isBinaryResult(), cda.getRawResultContentType());
             _futureTaskMap.put(id, _executorService.submit(task));
             return id;
         } catch(Exception ex){
@@ -346,6 +358,57 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         return cdr;
     }
 
+	@Override
+	public InputStream getResultData(String id) throws CommunityDetectionException {
+		File dataFile = new File(this.getCommunityDetectionResultDataFilePath(id));
+		CommunityDetectionResult cdr = getCommunityDetectionResultFromDbOrFilesystem(id);
+        if (cdr == null){
+            throw new CommunityDetectionException("No task with id of " + id + " found");
+        }
+		
+
+		while (cdr.getProgress() < 100){
+			try {
+				Thread.sleep(300L);
+			} catch(InterruptedException ie){
+				
+			}
+			
+			cdr = getCommunityDetectionResultFromDbOrFilesystem(id);
+		}
+		
+		if (cdr.getStatus().equals(CommunityDetectionResult.COMPLETE_STATUS)){
+
+			try {
+				if (dataFile.exists() || dataFile.length() > 0){
+					return new FileInputStream(dataFile);
+				}
+			} catch(FileNotFoundException fe){
+				_logger.error("File not found", fe);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String getResultDataType(String id) throws CommunityDetectionException {
+		CommunityDetectionResult cdr = getCommunityDetectionResultFromDbOrFilesystem(id);
+        if (cdr == null){
+            throw new CommunityDetectionException("No task with id of " + id + " found");
+        }
+		
+		ObjectMapper omappy = new ObjectMapper();
+		try {
+			BinaryData bData = omappy.readValue(cdr.getResult().traverse(), BinaryData.class);
+			return bData.getContentType();
+		} catch(IOException io){
+			_logger.error("Got io exception getting result data type: " + io.getMessage());
+		}
+		return null;
+	}
+
+	
+	
     /**
      * Gets status of task with given {@code id}
      * @param id Id of task

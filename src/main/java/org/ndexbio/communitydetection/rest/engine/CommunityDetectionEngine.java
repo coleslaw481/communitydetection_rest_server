@@ -1,5 +1,6 @@
 package org.ndexbio.communitydetection.rest.engine;
 
+import java.io.InputStream;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResultStatus;
@@ -29,6 +30,22 @@ public interface CommunityDetectionEngine extends Runnable {
      * @throws CommunityDetectionException  if there is an error
      */
     public CommunityDetectionResult getResult(final String id) throws CommunityDetectionException;
+	
+	/**
+     * Gets query result data only as {@code InputStream}
+     * @param id id of task
+     * @return data in result of task as {@code InputStream}
+     * @throws CommunityDetectionException  if there is an error
+     */
+    public InputStream getResultData(final String id) throws CommunityDetectionException;
+	
+	/**
+     * Gets mime type for result data
+     * @param id id of task
+     * @return mime type for result data ie image/png 
+     * @throws CommunityDetectionException  if there is an error
+     */
+    public String getResultDataType(final String id) throws CommunityDetectionException;
     
     
     /**
