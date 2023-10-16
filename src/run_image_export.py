@@ -7,18 +7,22 @@ import time
 import requests
 import ndex2
 
-REST_ENDPOINT = 'http://localhost:8081/cd/cd/v1'
-
+#REST_ENDPOINT = 'http://localhost:8081/cd/cd/v1'
+REST_ENDPOINT = 'http://cd.ndexbio.org/cd/communitydetection/v1'
 HEADERS = {'Content-Type': 'application/json',
            'Accept': 'application/json'}
 
-if len(sys.argv) != 2:
-    print('Usage: ' + sys.argv[0] + ' <path to write CX file>\n\n')
+if len(sys.argv) != 3:
+    print('Usage: ' + sys.argv[0] + ' <CX file or UUID of network on www.ndexbio.org> <output png file>\n\n')
     sys.exit(1)
 
 # create nice cx object
-print('creating nice cx object')
-nice_cx = ndex2.create_nice_cx_from_server('www.ndexbio.org', uuid='67c3b75d-6191-11e5-8ac5-06603eb7f303')
+if os.path.isfile(sys.argv[1]):
+    print('Loading Network ' + str(sys.argv[1]))
+    nice_cx = ndex2.create_nice_cx_from_file(sys.argv[1])
+else:
+    print('Loading Network with UUID ' + str(sys.argv[1]) + ' from NDEx')
+    nice_cx = ndex2.create_nice_cx_from_server('www.ndexbio.org', uuid=str(sys.argv[1]))
 
 
 
@@ -44,10 +48,10 @@ print('Task id is: ' + str(task_id))
 res = requests.get(REST_ENDPOINT + '/raw/' + str(task_id))
 
 if res.status_code == 200:
-    with open(sys.argv[1], 'wb') as f:
+    with open(sys.argv[2], 'wb') as f:
        for chunk in res.iter_content(1024):
            f.write(chunk)
-    print('Output written to: ' + sys.argv[1])
+    print('Output written to: ' + sys.argv[2])
     sys.exit(0)
 else:
     print('Non 200 status code received: ' + str(res.status_code))
