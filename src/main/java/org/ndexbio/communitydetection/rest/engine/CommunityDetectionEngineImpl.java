@@ -26,6 +26,7 @@ import org.ndexbio.communitydetection.rest.engine.util.DockerCommunityDetectionR
 import org.ndexbio.communitydetection.rest.model.BinaryData;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithm;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
+import org.ndexbio.communitydetection.rest.model.ServiceMetaData;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResultStatus;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
@@ -63,6 +64,8 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
     private AtomicInteger _queuedTasks;
     private AtomicInteger _canceledTasks;
     private CommunityDetectionAlgorithms _algorithms;
+	private ServiceMetaData _metaData;
+	
     private CommunityDetectionRequestValidator _validator;
     private String _dockerCmd;
         
@@ -72,7 +75,7 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
     private ConcurrentHashMap<String, CommunityDetectionResult> _results;
 
     private long _threadSleep = 10;
-    
+	
     /**
      * Constructor 
      * @param es Executor Service to run tasks
@@ -85,6 +88,7 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
             final String taskDir,
             final String dockerCmd,
             final CommunityDetectionAlgorithms algorithms,
+			final ServiceMetaData metaData,
             final CommunityDetectionRequestValidator validator){
         _executorService = es;
         _shutdown = false;
@@ -92,12 +96,21 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         _taskDir = taskDir;
         _dockerCmd = dockerCmd;
         _algorithms = algorithms;
+		_metaData = metaData;
         _validator = validator;
         _results = new ConcurrentHashMap<>();
         _completedTasks = new AtomicInteger(0);
         _queuedTasks = new AtomicInteger(0);
         _canceledTasks = new AtomicInteger(0);
     }
+	
+	public CommunityDetectionEngineImpl(ExecutorService es,
+            final String taskDir,
+            final String dockerCmd,
+            final CommunityDetectionAlgorithms algorithms,
+            final CommunityDetectionRequestValidator validator){
+		this(es, taskDir, dockerCmd, algorithms, null, validator);
+	}
     
     /**
      * Sets milliseconds thread should sleep if no work needs to be done.
@@ -472,6 +485,16 @@ public class CommunityDetectionEngineImpl implements CommunityDetectionEngine {
         }
         return _algorithms;
     }
+
+	@Override
+	public ServiceMetaData getMetaData() throws CommunityDetectionException {
+		if (_metaData == null){
+            throw new CommunityDetectionException("No MetaData found");
+        }
+        return _metaData;
+	}
+	
+	
 
     /**
      * Gets status of server

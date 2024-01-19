@@ -31,6 +31,11 @@ public class Configuration {
     public static final String LEGACY_DIFFUSION_PATH = "/diffusion";
     public static final String COMMUNITY_DETECTION_CONFIG = "COMMUNITY_DETECTION_CONFIG";
     
+	public static final String NAME = "name";
+	public static final String DESCRIPTION = "description";
+	public static final String INPUT_DATA_FORMAT = "input.data.format";
+	public static final String OUTPUT_DATA_FORMAT = "output.data.format";
+	
     public static final String TASK_DIR = "communitydetection.task.dir";
     public static final String HOST_URL = "communitydetection.host.url";    
     public static final String NUM_WORKERS = "communitydetection.number.workers";
@@ -56,6 +61,10 @@ public class Configuration {
     private static String _hostURL;
     private static String _dockerCmd;
     private static int _numWorkers;
+	private static String _name;
+	private static String _description;
+	private static String _inputDataFormat;
+	private static String _outputDataFormat;
     private static CommunityDetectionAlgorithms _algorithms;
     private static CommunityDetectionAlgorithm _diffusionAlgo;
     private static long _diffusionPollingDelay;
@@ -114,7 +123,11 @@ public class Configuration {
         _swaggerDescription = props.getProperty(Configuration.SWAGGER_DESC, null);
         _contextPath = props.getProperty(Configuration.RUNSERVER_CONTEXTPATH, "/cd");
         _applicationPath = props.getProperty(Configuration.RUNSERVER_APP_PATH, "/communitydetection");
-        if (_hostURL.trim().isEmpty()){
+        _name = props.getProperty(Configuration.NAME, "Some App");
+		_description = props.getProperty(Configuration.DESCRIPTION, "Some description");
+		_inputDataFormat = props.getProperty(Configuration.INPUT_DATA_FORMAT, "CX2");
+		_outputDataFormat = props.getProperty(Configuration.OUTPUT_DATA_FORMAT, "CX2");
+		if (_hostURL.trim().isEmpty()){
             _hostURL = "";
         } else if (!_hostURL.endsWith("/")){
             _hostURL =_hostURL + "/";
@@ -221,7 +234,40 @@ public class Configuration {
     public String getSwaggerDescription(){
         return _swaggerDescription;
     }
+
+	public static String getName() {
+		return _name;
+	}
+
+	public static void setName(String _name) {
+		Configuration._name = _name;
+	}
+
+	public static String getDescription() {
+		return _description;
+	}
+
+	public static void setDescription(String _description) {
+		Configuration._description = _description;
+	}
+
+	public static String getInputDataFormat() {
+		return _inputDataFormat;
+	}
+
+	public static void setInputDataFormat(String _inputDataFormat) {
+		Configuration._inputDataFormat = _inputDataFormat;
+	}
+
+	public static String getOutputDataFormat() {
+		return _outputDataFormat;
+	}
+
+	public static void setOutputDataFormat(String _outputDataFormat) {
+		Configuration._outputDataFormat = _outputDataFormat;
+	}
     
+	
     /**
      * Run server context path
      * @return context path

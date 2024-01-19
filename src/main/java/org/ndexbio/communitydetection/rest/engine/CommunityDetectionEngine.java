@@ -2,6 +2,7 @@ package org.ndexbio.communitydetection.rest.engine;
 
 import java.io.InputStream;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
+import org.ndexbio.communitydetection.rest.model.ServiceMetaData;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResultStatus;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
@@ -71,6 +72,14 @@ public interface CommunityDetectionEngine extends Runnable {
      */
     public CommunityDetectionAlgorithms getAlgorithms() throws CommunityDetectionException;
     
+	/**
+	 * Gets community detection metadata for this service
+	 * 
+	 * @throws CommunityDetectionException if there is an a error
+	 * @return metadata
+	 */
+	public ServiceMetaData getMetaData() throws CommunityDetectionException;
+	
     /**
      * Gets status of server
      * @return status of server

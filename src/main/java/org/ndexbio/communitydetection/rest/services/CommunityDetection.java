@@ -27,9 +27,9 @@ import org.ndexbio.communitydetection.rest.model.CommunityDetectionRequest;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResult;
 import org.ndexbio.communitydetection.rest.engine.CommunityDetectionEngine;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionAlgorithms;
+import org.ndexbio.communitydetection.rest.model.ServiceMetaData;
 import org.ndexbio.communitydetection.rest.model.CommunityDetectionResultStatus;
 import org.ndexbio.communitydetection.rest.model.ErrorResponse;
-import org.ndexbio.communitydetection.rest.model.JobStatus;
 import org.ndexbio.communitydetection.rest.model.Task;
 import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionBadRequestException;
 import org.ndexbio.communitydetection.rest.model.exceptions.CommunityDetectionException;
@@ -190,6 +190,43 @@ public class CommunityDetection {
             return Response.status(500).type(MediaType.APPLICATION_JSON).entity(er.asJson()).build();
         }
     }
+	
+	@GET
+	@Path(Configuration.V_ONE_PATH + "/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Gets meta data about this service",
+               description = "Provides detailed information about each algorithm/task that can be used with this service",
+               responses = {@ApiResponse(responseCode = "200",
+                           description = "Success",
+                           content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                schema = @Schema(implementation = ServiceMetaData.class))),
+                   @ApiResponse(responseCode = "410",
+                           description = "Task not found"),
+                   @ApiResponse(responseCode = "500", description = "Server Error",
+                                content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                schema = @Schema(implementation = ErrorResponse.class)))            
+               })
+    public Response getMetaData(){
+        ObjectMapper omappy = new ObjectMapper();
+
+        try {
+            CommunityDetectionEngine engine = Configuration.getInstance().getCommunityDetectionEngine();
+            if (engine == null){
+                throw new NullPointerException("CommunityDetection Engine not loaded");
+            }
+            
+            ServiceMetaData cda = engine.getMetaData();
+            if (cda == null){
+                return Response.status(410).build();
+            }
+            return Response.ok().type(MediaType.APPLICATION_JSON).entity(omappy.writeValueAsString(cda)).build();
+        }
+        catch(Exception ex){
+            ErrorResponse er = new ErrorResponse("Error trying to get metadata", ex);
+            return Response.status(500).type(MediaType.APPLICATION_JSON).entity(er.asJson()).build();
+        }
+    }
+	
     
     @GET
     @Path(Configuration.V_ONE_PATH + "/algorithms")
